@@ -50,3 +50,28 @@ for interactive and auto-delete post stop
 ```
 docker run -it --rm --name wikicook-backend -p 8001:8000 wikicook-backend-image
 ```
+
+
+## Database Commands
+
+
+Docker command to spin up a postgresql db
+
+```
+docker run --name postgres-db \
+  -e POSTGRES_PASSWORD=mypassword \
+  -e POSTGRES_USER=myuser \
+  -e POSTGRES_DB=mydatabase \
+  -p 5432:5432 \
+  -v postgres-data:/var/lib/postgresql/data \
+  -d postgres
+```
+
+> Volume mount flag `-v <source> : <destination>`
+
+
+To get continuos logs of a container
+
+```
+docker logs -f <container_name>
+```
