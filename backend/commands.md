@@ -34,7 +34,7 @@ Here
 - `.` at the end of the command specifies the directory where the image is built from (which has the docker-file and the code files)
 
 
-To make a container
+To create a container
 
 ```
 docker run -d --name wikicook-backend -p 8001:8000 wikicook-backend-image
