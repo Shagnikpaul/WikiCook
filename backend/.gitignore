@@ -1,0 +1,27 @@
+wikihow-backend-env/
+
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+# OS generated files
+.DS_Store
+# Virtual environment
+venv/
+.venv/
+env/
+.env/
+# IDE-specific files (e.g., PyCharm, VS Code)
+.idea/
+.vscode/
+# Test and coverage reports
+.coverage
+.coverage.*
+htmlcov/
+nosetests.xml
+coverage.xml
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+*.egg
