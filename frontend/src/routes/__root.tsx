@@ -1,9 +1,9 @@
-import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
+import { HeadContent, ParsedLocation, Scripts, createRootRoute } from '@tanstack/react-router'
 
 
 import appCss from '../styles.css?url'
 import { NavBar } from '@/components/NavBar/NavBar'
-
+import { useLocation } from '@tanstack/react-router'
 export const Route = createRootRoute({
   head: () => ({
     meta: [
@@ -15,7 +15,7 @@ export const Route = createRootRoute({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'TanStack Start Starter',
+        title: 'WikiCook',
       },
     ],
     links: [
@@ -30,13 +30,15 @@ export const Route = createRootRoute({
 })
 
 function RootDocument({ children }: { children: React.ReactNode }) {
+  
+  const location:ParsedLocation = useLocation()
   return (
     <html lang="en">
       <head>
         <HeadContent />
       </head>
       <body>
-        <NavBar />
+        <NavBar route={location}/>
         {children}
 
         <Scripts />
