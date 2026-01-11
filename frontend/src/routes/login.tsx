@@ -1,7 +1,8 @@
+import { Link, createFileRoute } from '@tanstack/react-router'
+import { ArrowLeft, ChefHat } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LoginForm } from '@/components/ui/login-form';
-import { createFileRoute, Link } from '@tanstack/react-router'
-import { ArrowLeft, ChefHat } from 'lucide-react';
+
 export const Route = createFileRoute('/login')({
   component: RouteComponent,
 })
@@ -11,7 +12,7 @@ function RouteComponent() {
     <div className="flex flex-col items-center justify-center min-h-screen bg-[url('/gradient.png')] gap-3.5" >
 
       <div className='flex justify-center w-full'>
-        <div className='flex flex-col w-2/8'>
+        <div className='flex flex-col lg:w-2/8 w-7/8 md:5/8'>
 
           <div className='flex justify-center w-full'>
             <div className='flex flex-col mb-5'>

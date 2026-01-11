@@ -1,18 +1,14 @@
+import { useEffect } from "react";
+import { Link, useRouterState } from '@tanstack/react-router'
+import type { ParsedLocation} from '@tanstack/react-router';
 import {
     NavigationMenu,
-    NavigationMenuContent,
-    NavigationMenuIndicator,
     NavigationMenuItem,
     NavigationMenuLink,
     NavigationMenuList,
-    NavigationMenuTrigger,
-    NavigationMenuViewport,
     navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu"
-import { getRouter } from "@/router";
-import { routeTree } from "@/routeTree.gen";
-import { createRouter, Link, ParsedLocation, useRouterState } from '@tanstack/react-router'
-import { useEffect } from "react";
+
 
 export interface INavBarProps {
     route: ParsedLocation
