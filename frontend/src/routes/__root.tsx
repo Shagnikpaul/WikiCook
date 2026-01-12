@@ -1,9 +1,10 @@
 import { HeadContent, ParsedLocation, Scripts, createRootRoute } from '@tanstack/react-router'
-
+import { authClient } from "@/lib/auth-client"
 
 import appCss from '../styles.css?url'
 import { NavBar } from '@/components/NavBar/NavBar'
-import { useLocation } from '@tanstack/react-router'
+
+
 export const Route = createRootRoute({
   head: () => ({
     meta: [
@@ -30,17 +31,22 @@ export const Route = createRootRoute({
 })
 
 function RootDocument({ children }: { children: React.ReactNode }) {
-  
-  const location:ParsedLocation = useLocation()
+
+  const {
+    data: session,
+    isPending, //loading state
+    error, //error object
+    refetch //refetch the session
+  } = authClient.useSession();
+
   return (
     <html lang="en">
       <head>
         <HeadContent />
       </head>
       <body>
-        <NavBar route={location}/>
+        <NavBar user={session?.user}  />
         {children}
-
         <Scripts />
       </body>
     </html>

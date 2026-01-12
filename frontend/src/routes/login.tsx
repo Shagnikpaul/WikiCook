@@ -8,6 +8,7 @@ export const Route = createFileRoute('/login')({
 })
 
 function RouteComponent() {
+  
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-[url('/gradient.png')] gap-3.5" >
 

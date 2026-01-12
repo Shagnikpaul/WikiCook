@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import { Link, useRouterState } from '@tanstack/react-router'
-import type { ParsedLocation} from '@tanstack/react-router';
 import {
     NavigationMenu,
     NavigationMenuItem,
@@ -8,10 +7,12 @@ import {
     NavigationMenuList,
     navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu"
+import { User } from "better-auth";
+
 
 
 export interface INavBarProps {
-    route: ParsedLocation
+    user: User | undefined,
 }
 
 export function NavBar(props: INavBarProps) {
@@ -40,7 +41,8 @@ export function NavBar(props: INavBarProps) {
 
 
                 </NavigationMenu>
-                <div>
+                <div className="flex">
+                    <p>Logged in as {props.user?.name}</p>
                     <NavigationMenu>
                         <NavigationMenuList>
                             <NavigationMenuItem>
