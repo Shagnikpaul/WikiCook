@@ -16,7 +16,7 @@ services:
       - postgres-data:/var/lib/postgresql
     
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -41,5 +41,17 @@ services:
         condition: service_healthy
 
     restart: unless-stopped
+
+  better-auth-service:
+    build: ./better-auth-service
+    container_name: wikicook-auth
+    env_file:
+      - ./better-auth-service/.env.docker
+    ports:
+      - "8001:8001"
+    depends_on:
+      db:
+        condition: service_healthy
+
 volumes:
   postgres-data:

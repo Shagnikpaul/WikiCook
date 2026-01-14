@@ -13,7 +13,7 @@ var corsOptions = {
 }
 
 const app = express();
-const port = 8000;
+const port = 8001;
 app.use(morgan('dev'))
 app.use(cors(corsOptions))
 app.all('/api/auth/{*any}', toNodeHandler(auth));

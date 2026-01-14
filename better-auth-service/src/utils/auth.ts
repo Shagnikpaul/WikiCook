@@ -9,7 +9,7 @@ import { Pool } from "pg";
 
 export const auth = betterAuth({
     database: new Pool({
-        host: 'localhost',
+        host: process.env.DB_HOST,
         port: 5432,
         user: process.env.POSTGRES_USER,
         password: process.env.POSTGRES_PASSWORD,
