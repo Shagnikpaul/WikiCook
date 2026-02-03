@@ -45,7 +45,7 @@ export function NavBar(props: INavBarProps) {
 
 
     return (
-        <div className={`flex justify-center p-3 border-b relative ${routerState.location.pathname === '/signup' || routerState.location.pathname === '/login' ? "hidden" : ""}`}>
+        <div className={`flex justify-center p-3 relative ${routerState.location.pathname === '/signup' || routerState.location.pathname === '/login' ? "hidden" : ""}`}>
             <div className="w-4/5 flex justify-between">
                 <NavigationMenu>
                     <NavigationMenuList>
