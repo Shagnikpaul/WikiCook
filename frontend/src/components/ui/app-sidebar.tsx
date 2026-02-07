@@ -17,7 +17,7 @@ import { DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "./dr
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     return (
-        <Sidebar>
+        <Sidebar className="max-h-8/12">
             <SidebarHeader>
                 <h1 className="scroll-m-20 text-2xl font-medium tracking-tight text-balance">
                     Filter
