@@ -41,13 +41,13 @@ function App() {
 
               {/* Main cards sections */}
 
-              <div className="w-full rounded-2xl min-h-8/12">
-                <Scroller className="flex h-80 w-full min-h-full flex-col gap-2.5 p-4">
+              <div className="w-full rounded-2xl">
+                <Scroller withNavigation className="flex w-full h-150 flex-col gap-2.5">
                   
 
                   
                   <RecipeCard />
-                   
+                   <RecipeCard /><RecipeCard />
                   
                 </Scroller>
               </div>
