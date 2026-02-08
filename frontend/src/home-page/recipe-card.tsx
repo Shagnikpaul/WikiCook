@@ -14,17 +14,19 @@ import {
 
 
 export interface IRecipeCardProps {
+    img_url: string | undefined
 }
 
 export default function RecipeCard(props: IRecipeCardProps) {
+    
     return (
         <div>
             <Card className="relative w-full max-w-sm pt-0">
-                <div className="absolute inset-0 z-30 aspect-video bg-black/35" />
+                <div className="absolute inset-0 z-30 aspect-vide" />
                 <img
-                    src="https://avatar.vercel.sh/shadcn1"
+                    src={props.img_url}
                     alt="Event cover"
-                    className="relative z-20 aspect-video w-full object-cover brightness-60 grayscale dark:brightness-40"
+                    className="relative z-20 aspect-video w-full object-cover"
                 />
                 <CardHeader>
                     <CardAction>
