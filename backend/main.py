@@ -5,6 +5,8 @@ from database.models.user_preferences import UserPreferences
 from database.models.recipe import Recipe
 from database.models.ingredient import Ingredient
 from database.models.recipe_ingredient import RecipeIngredient
+from database.models.recipe_step import RecipeStep
+from database.models.recipe_step_media import RecipeStepMedia
 
 # Create all tables in the database
 Base.metadata.create_all(bind=engine)
