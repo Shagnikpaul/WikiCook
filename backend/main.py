@@ -7,6 +7,8 @@ from database.models.ingredient import Ingredient
 from database.models.recipe_ingredient import RecipeIngredient
 from database.models.recipe_step import RecipeStep
 from database.models.recipe_step_media import RecipeStepMedia
+from database.models.tag import Tag
+from database.models.recipe_tag import RecipeTag
 
 # Create all tables in the database
 Base.metadata.create_all(bind=engine)

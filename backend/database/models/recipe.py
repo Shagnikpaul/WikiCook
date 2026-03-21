@@ -48,3 +48,4 @@ class Recipe(Base):
     creator = relationship("User", backref="recipes")
     ingredients = relationship("RecipeIngredient", back_populates="recipe", cascade="all, delete-orphan")
     steps = relationship("RecipeStep", back_populates="recipe", cascade="all, delete-orphan")
+    tags = relationship("Tag", secondary="recipe_tags", backref="recipes")
