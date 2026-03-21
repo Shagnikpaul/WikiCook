@@ -1,4 +1,4 @@
-import { HeadContent, ParsedLocation, Scripts, createRootRoute } from '@tanstack/react-router'
+import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
 import { authClient } from "@/lib/auth-client"
 
 import appCss from '../styles.css?url'
@@ -34,9 +34,6 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 
   const {
     data: session,
-    isPending, //loading state
-    error, //error object
-    refetch //refetch the session
   } = authClient.useSession();
 
   return (
