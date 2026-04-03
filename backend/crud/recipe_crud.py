@@ -56,7 +56,7 @@ def get_recipes(db: Session, diet: Optional[str] = None, cuisine: Optional[str] 
     return result_list
 
 
-def get_recipe_by_id(db: Session, recipe_id: str):
+def get_recipe_by_id(db: Session, recipe_id: str, current_user_id: Optional[str] = None):
     """
     Fetch full recipe details including nested ingredients and steps.
     """
@@ -107,7 +107,7 @@ def get_recipe_by_id(db: Session, recipe_id: str):
         "steps": steps_out,
         "tags": [tag.name for tag in recipe.tags],
         "status": recipe.status,
-        "can_edit": False, # Placeholder
+        "can_edit": recipe.creator_id == current_user_id,
         "can_comment": False # Placeholder
     }
 
@@ -131,7 +131,13 @@ def create_recipe(db: Session, creator_id: str, recipe_data: dict):
     db.refresh(new_recipe)
     return new_recipe
 
-def add_ingredient_to_recipe(db: Session, recipe_id: str, ingredient_data: dict):
+def add_ingredient_to_recipe(db: Session, recipe_id: str, current_user_id: str, ingredient_data: dict):
+    recipe = db.query(Recipe).filter(Recipe.id == recipe_id).first()
+    if not recipe:
+        raise HTTPException(status_code=404, detail="Recipe not found")
+    if recipe.creator_id != current_user_id:
+        raise HTTPException(status_code=403, detail="Not authorized to edit this recipe")
+
     new_ingredient = RecipeIngredient(
         recipe_id=recipe_id,
         ingredient_id=ingredient_data["ingredient_id"],
@@ -143,7 +149,13 @@ def add_ingredient_to_recipe(db: Session, recipe_id: str, ingredient_data: dict)
     db.refresh(new_ingredient)
     return new_ingredient
 
-def add_step_to_recipe(db: Session, recipe_id: str, step_data: dict):
+def add_step_to_recipe(db: Session, recipe_id: str, current_user_id: str, step_data: dict):
+    recipe = db.query(Recipe).filter(Recipe.id == recipe_id).first()
+    if not recipe:
+        raise HTTPException(status_code=404, detail="Recipe not found")
+    if recipe.creator_id != current_user_id:
+        raise HTTPException(status_code=403, detail="Not authorized to edit this recipe")
+
     new_step = RecipeStep(
         recipe_id=recipe_id,
         step_number=step_data["step_number"],
@@ -155,10 +167,12 @@ def add_step_to_recipe(db: Session, recipe_id: str, step_data: dict):
     db.refresh(new_step)
     return new_step
 
-def publish_recipe(db: Session, recipe_id: str):
+def publish_recipe(db: Session, recipe_id: str, current_user_id: str):
     recipe = db.query(Recipe).filter(Recipe.id == recipe_id).first()
     if not recipe:
         raise HTTPException(status_code=404, detail="Recipe not found")
+    if recipe.creator_id != current_user_id:
+        raise HTTPException(status_code=403, detail="Not authorized to publish this recipe")
     
     recipe.status = RecipeStatus.community_testing
     db.commit()
@@ -166,6 +180,18 @@ def publish_recipe(db: Session, recipe_id: str):
     return recipe
 
 def add_media_to_step(db: Session, step_id: str, uploader_id: str, media_type: str, file_name: str):
+    # Verify the uploader owns the recipe associated with this step
+    step = db.query(RecipeStep).filter(RecipeStep.id == step_id).first()
+    if not step:
+        raise HTTPException(status_code=404, detail="Step not found")
+    
+    recipe = db.query(Recipe).filter(Recipe.id == step.recipe_id).first()
+    if not recipe:
+         raise HTTPException(status_code=404, detail="Recipe not found")
+         
+    if recipe.creator_id != uploader_id:
+        raise HTTPException(status_code=403, detail="Not authorized to add media to this step")
+
     # Mocking CDN upload and getting URL
     media_url = f"https://cdn.app/{file_name}"
     

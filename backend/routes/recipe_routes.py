@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from database.connection import get_db
 from crud.recipe_crud import get_recipes, get_recipe_by_id, create_recipe, add_ingredient_to_recipe, add_step_to_recipe, publish_recipe
-from auth import get_current_user
+from auth import get_current_user, get_optional_user
 from typing import Optional
 
 class RecipeCreate(BaseModel):
@@ -40,12 +40,13 @@ def read_recipes(
 @router.get("/{recipe_id}")
 def read_recipe_detail(
     recipe_id: str,
+    user_id: Optional[str] = Depends(get_optional_user),
     db: Session = Depends(get_db)
 ):
     """
     Get full details for a specific recipe by ID.
     """
-    recipe = get_recipe_by_id(db, recipe_id)
+    recipe = get_recipe_by_id(db, recipe_id, user_id)
     if not recipe:
         raise HTTPException(status_code=404, detail="Recipe not found")
         
@@ -58,9 +59,6 @@ def create_new_recipe(
     user_id: str = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """
-    Create a new recipe outline.
-    """
     new_recipe = create_recipe(db, user_id, recipe.model_dump())
     return {
         "recipe_id": new_recipe.id,
@@ -78,7 +76,7 @@ def add_ingredient(
     """
     Add an ingredient to an existing recipe.
     """
-    add_ingredient_to_recipe(db, recipe_id, ingredient.model_dump())
+    add_ingredient_to_recipe(db, recipe_id, user_id, ingredient.model_dump())
     return {"message": "Ingredient added"}
 
 
@@ -92,7 +90,7 @@ def add_step(
     """
     Add a step to an existing recipe.
     """
-    new_step = add_step_to_recipe(db, recipe_id, step.model_dump())
+    new_step = add_step_to_recipe(db, recipe_id, user_id, step.model_dump())
     return {"step_id": new_step.id}
 
 
@@ -102,8 +100,5 @@ def publish(
     user_id: str = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """
-    Publish a recipe for community testing.
-    """
-    recipe = publish_recipe(db, recipe_id)
+    recipe = publish_recipe(db, recipe_id, user_id)
     return {"message": "Recipe published", "status": recipe.status.value}
