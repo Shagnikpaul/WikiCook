@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from database.connection import engine, Base
 from routes.user_routes import router as user_router
 from routes.recipe_routes import router as recipe_router
+from routes.step_routes import router as step_router
 
 # Create all tables in the database
 Base.metadata.create_all(bind=engine)
@@ -21,5 +22,6 @@ app.add_middleware(
 # Register routers
 app.include_router(user_router)
 app.include_router(recipe_router)
+app.include_router(step_router)
 
 

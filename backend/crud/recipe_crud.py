@@ -1,6 +1,10 @@
 from sqlalchemy.orm import Session, joinedload
-from database.models.recipe import Recipe
+from database.models.recipe import Recipe, RecipeStatus, VisibilityType
+from database.models.recipe_ingredient import RecipeIngredient
+from database.models.recipe_step import RecipeStep
+from database.models.recipe_step_media import RecipeStepMedia, MediaType
 from database.models.tag import Tag, TagType
+from fastapi import HTTPException
 from typing import Optional
 
 def get_recipes(db: Session, diet: Optional[str] = None, cuisine: Optional[str] = None, max_time: Optional[int] = None, sort: Optional[str] = None):
@@ -106,3 +110,74 @@ def get_recipe_by_id(db: Session, recipe_id: str):
         "can_edit": False, # Placeholder
         "can_comment": False # Placeholder
     }
+
+
+def create_recipe(db: Session, creator_id: str, recipe_data: dict):
+    # Parse visibility default to public if matched
+    viz = VisibilityType.public if recipe_data.get("visibility") == "public" else VisibilityType.private
+    
+    new_recipe = Recipe(
+        creator_id=creator_id,
+        title=recipe_data["title"],
+        description=recipe_data.get("description"),
+        servings=recipe_data.get("servings"),
+        prep_time_minutes=recipe_data.get("prep_time_minutes"),
+        cook_time_minutes=recipe_data.get("cook_time_minutes"),
+        visibility=viz,
+        status=RecipeStatus.draft
+    )
+    db.add(new_recipe)
+    db.commit()
+    db.refresh(new_recipe)
+    return new_recipe
+
+def add_ingredient_to_recipe(db: Session, recipe_id: str, ingredient_data: dict):
+    new_ingredient = RecipeIngredient(
+        recipe_id=recipe_id,
+        ingredient_id=ingredient_data["ingredient_id"],
+        quantity=ingredient_data["quantity"],
+        unit=ingredient_data.get("unit")
+    )
+    db.add(new_ingredient)
+    db.commit()
+    db.refresh(new_ingredient)
+    return new_ingredient
+
+def add_step_to_recipe(db: Session, recipe_id: str, step_data: dict):
+    new_step = RecipeStep(
+        recipe_id=recipe_id,
+        step_number=step_data["step_number"],
+        instruction=step_data["instruction"],
+        estimated_time_minutes=step_data.get("estimated_time_minutes")
+    )
+    db.add(new_step)
+    db.commit()
+    db.refresh(new_step)
+    return new_step
+
+def publish_recipe(db: Session, recipe_id: str):
+    recipe = db.query(Recipe).filter(Recipe.id == recipe_id).first()
+    if not recipe:
+        raise HTTPException(status_code=404, detail="Recipe not found")
+    
+    recipe.status = RecipeStatus.community_testing
+    db.commit()
+    db.refresh(recipe)
+    return recipe
+
+def add_media_to_step(db: Session, step_id: str, uploader_id: str, media_type: str, file_name: str):
+    # Mocking CDN upload and getting URL
+    media_url = f"https://cdn.app/{file_name}"
+    
+    enum_type = MediaType.image if media_type == "image" else MediaType.video
+    
+    new_media = RecipeStepMedia(
+        step_id=step_id,
+        media_type=enum_type,
+        media_url=media_url,
+        uploaded_by=uploader_id
+    )
+    db.add(new_media)
+    db.commit()
+    db.refresh(new_media)
+    return new_media

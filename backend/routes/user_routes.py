@@ -13,10 +13,6 @@ async def save_preferences(
     user_id: str = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """
-    Save or update user preferences (onboarding).
-    Protected: requires a valid Better Auth session.
-    """
     # Check if preferences already exist for this user
     existing = db.query(UserPreferences).filter(
         UserPreferences.user_id == user_id
