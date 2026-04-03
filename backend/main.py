@@ -1,38 +1,25 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from database.connection import engine, Base
-from database.models.user import User  # Mirror model for Better Auth's user table
-from database.models.user_preferences import UserPreferences
-from database.models.recipe import Recipe
-from database.models.ingredient import Ingredient
-from database.models.recipe_ingredient import RecipeIngredient
-from database.models.recipe_step import RecipeStep
-from database.models.recipe_step_media import RecipeStepMedia
-from database.models.tag import Tag
-from database.models.recipe_tag import RecipeTag
-from database.models.ai_job import AIJob
-from database.models.recipe_review import RecipeReview
-from database.models.comment import Comment
-from database.models.edit_suggestion import EditSuggestion
-from database.models.edit_vote import EditVote
-from database.models.recipe_version import RecipeVersion
-from database.models.saved_recipe import SavedRecipe
-from database.models.follow import Follow
-from database.models.meal_plan import MealPlan
-from database.models.meal_plan_item import MealPlanItem
-from database.models.grocery_list import GroceryList
-from database.models.grocery_list_item import GroceryListItem
+from routes.user_routes import router as user_router
+from routes.recipe_routes import router as recipe_router
 
 # Create all tables in the database
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="WikiCook API")
 
+# CORS - allow frontend to send cookies
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-@app.get("/")
-def read_root():
-    return {"message": "WikiCook API is running!"}
+# Register routers
+app.include_router(user_router)
+app.include_router(recipe_router)
 
 
-@app.get("/health")
-def health_check():
-    return {"status": "ok"}
