@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input"
 import RecipeCard from "@/home-page/recipe-card";
 
 
-export const Route = createFileRoute("/")({ component: App });
+export const Route = createFileRoute("/")({ component: App, notFoundComponent: App });
 
 function App() {
 
@@ -26,7 +26,7 @@ function App() {
       "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
     ]
     const min = 0;
-    const max = imageUrlList.length-1;
+    const max = imageUrlList.length - 1;
     const url = imageUrlList.at(Math.floor(Math.random() * (max - min + 1)) + min);
     return url;
   }
@@ -52,7 +52,7 @@ function App() {
               {/* Main cards sections */}
 
               <div className="w-full rounded-2xl">
-                <div className="grid grid-cols-3 w-full h-145 border p-5 rounded-3xl flex-col gap-5 overflow-y-scroll ">
+                <div className="grid grid-cols-3 w-full h-145  flex-col gap-5">
 
 
 

@@ -1,7 +1,7 @@
 import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
+import appCss from '../styles.css?url'
 import { authClient } from "@/lib/auth-client"
 
-import appCss from '../styles.css?url'
 import { NavBar } from '@/components/NavBar/NavBar'
 
 
