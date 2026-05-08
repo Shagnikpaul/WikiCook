@@ -11,35 +11,39 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Link } from "@tanstack/react-router"
-import { authClient } from '@/lib/auth-client';
+import { authApi } from '@/lib/auth-api';
 import { useState } from "react"
+import { useNavigate } from "@tanstack/react-router"
 
 export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
+  const navigate = useNavigate();
   const [email, setEmail] = useState<string>("");
   const [userName, setUserName] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [passwordConfirm, setPasswordConfirm] = useState<string>("");
+  const [error, setError] = useState<string | null>(null);
+
   const handleSingUp = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setError(null);
 
-    const { data, error } = await authClient.signUp.email({
-      email: email, // user email address
-      password: password, // user password -> min 8 characters by default
-      name: userName, // user display name
-      callbackURL: "/" // A URL to redirect to after the user verifies their email (optional)
-    }, {
-      onRequest: (ctx) => {
-        //show loading
-      },
-      onSuccess: (ctx) => {
-        //redirect to the dashboard or sign in page
-      },
-      onError: (ctx) => {
-        // display the error message
-        console.log(ctx.error.message);
+    if (password !== passwordConfirm) {
+      setError("Passwords do not match");
+      return;
+    }
 
-      },
-    });
+    try {
+      await authApi.register({
+        email: email,
+        password: password,
+        name: userName
+      });
+      // After registration, usually we redirect to login
+      navigate({ to: "/login" });
+    } catch (err: any) {
+      console.log('Error during registration:', err.message);
+      setError(err.response?.data?.detail || "Registration failed");
+    }
   }
   return (
     <Card {...props}>

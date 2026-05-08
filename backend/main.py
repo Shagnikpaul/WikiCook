@@ -50,6 +50,11 @@ app.include_router(
     prefix="/auth",
     tags=["auth"],
 )
+app.include_router(
+    fastapi_users.get_users_router(UserRead, UserUpdate),
+    prefix="/users",
+    tags=["users"],
+)
 
 app.include_router(user_router)
 app.include_router(recipe_router)

@@ -23,21 +23,22 @@ import {
     BellIcon,
     LogOutIcon,
 } from "lucide-react"
-import { User } from "better-auth";
-import { authClient } from "@/lib/auth-client";
+import { authApi } from "@/lib/auth-api";
 
 export interface INavBarProps {
-    user: User | undefined,
+    user: any | undefined,
 }
 
 export function NavBar(props: INavBarProps) {
     const routerState = useRouterState();
     const currentPath = routerState.location.pathname;
-    const onDelete = () => {
-        authClient.signOut();
-        redirect({
-            to: '/',
-        });
+    const onDelete = async () => {
+        try {
+            await authApi.logout();
+            window.location.href = '/'; // Simple way to refresh state
+        } catch (err) {
+            console.error("Logout failed:", err);
+        }
     }
     useEffect(() => {
         console.log('Yoooo changed to ', currentPath);

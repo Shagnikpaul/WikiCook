@@ -12,47 +12,35 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Link } from "@tanstack/react-router"
-import { authClient } from '@/lib/auth-client';
+import { authApi } from '@/lib/auth-api';
 import { useState } from "react"
+import { useNavigate } from "@tanstack/react-router"
+
 export function LoginForm({
     className,
     ...props
 }: React.ComponentProps<"div">) {
-
+    const navigate = useNavigate();
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
+    const [error, setError] = useState<string | null>(null);
+
     const handleLogin = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        const { data, error } = await authClient.signIn.email({
-            /**
-             * The user email
-             */
-            email,
-            /**
-             * The user password
-             */
-            password,
-            /**
-             * A URL to redirect to after the user verifies their email (optional)
-             */
-            callbackURL: "/",
-            /**
-             * remember the user session after the browser is closed. 
-             * @default true
-             */
-            rememberMe: false
-        }, {
-            //callbacks
-            onError(context) {
-                console.log('LMAO WHAT HAPPENED : ', context.error.message);
+        setError(null);
 
-            },
-            onSuccess(context) {
-                console.log('Yipee logged in...', context.response.statusText);
+        const formData = new FormData();
+        formData.append("username", email);
+        formData.append("password", password);
 
-            },
-        })
-
+        try {
+            await authApi.login(formData);
+            console.log('Yipee logged in...');
+            navigate({ to: "/" });
+        } catch (err: any) {
+            console.log('LMAO WHAT HAPPENED : ', err.message);
+            setError("Invalid email or password");
+        }
     }
     return (
         <div className={cn("flex flex-col gap-6", className)} {...props}>
