@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Body
 from sqlalchemy.orm import Session
 from database.connection import get_db
 from database.models.user_preferences import UserPreferences
+from database.models.user import User
 from auth import get_current_user
 
 router = APIRouter(prefix="/users", tags=["Users"])
@@ -10,12 +11,12 @@ router = APIRouter(prefix="/users", tags=["Users"])
 @router.post("/preferences")
 async def save_preferences(
     body: dict = Body(...),
-    user_id: str = Depends(get_current_user),
+    user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     # Check if preferences already exist for this user
     existing = db.query(UserPreferences).filter(
-        UserPreferences.user_id == user_id
+        UserPreferences.user_id == user.id
     ).first()
 
     if existing:
@@ -26,7 +27,7 @@ async def save_preferences(
     else:
         # Create new preferences
         prefs = UserPreferences(
-            user_id=user_id,
+            user_id=user.id,
             dietary_preferences=body.get("dietary_preferences"),
             favorite_cuisines=body.get("favorite_cuisines"),
             skill_level=body.get("skill_level"),
