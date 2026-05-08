@@ -1,17 +1,18 @@
-from sqlalchemy import Column, String, Boolean, DateTime
+from sqlalchemy import String, DateTime, func
+from sqlalchemy.orm import Mapped, mapped_column
 from database.connection import Base
+from fastapi_users_db_sqlalchemy import SQLAlchemyBaseUserTableUUID
 
-class User(Base):
+class User(SQLAlchemyBaseUserTableUUID, Base):
     """
-    Mirror model for Better Auth's user table.
+    User model for FastAPI-Users.
     """
     __tablename__ = "user"
     __table_args__ = {'extend_existing': True}
 
-    id = Column(String, primary_key=True)
-    email = Column(String, nullable=False, unique=True)
-    email_verified = Column("emailVerified", Boolean, nullable=False)
-    name = Column(String, nullable=False)
-    image = Column(String, nullable=True)
-    created_at = Column("createdAt", DateTime(timezone=True))
-    updated_at = Column("updatedAt", DateTime(timezone=True))
+    # FastAPI-Users provides id (UUID), email, hashed_password, is_active, is_superuser, is_verified
+    # We can add extra fields here:
+    name: Mapped[str] = mapped_column(String, nullable=False, default="User")
+    image: Mapped[str] = mapped_column(String, nullable=True)
+    created_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())

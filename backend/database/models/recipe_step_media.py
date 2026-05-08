@@ -19,7 +19,8 @@ class RecipeStepMedia(Base):
     step_id = Column(String, ForeignKey("recipe_steps.id", ondelete="CASCADE"), nullable=False)
     media_type = Column(SQLEnum(MediaType), nullable=False)
     media_url = Column(Text, nullable=False)
-    uploaded_by = Column(String, ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
+    from fastapi_users_db_sqlalchemy.generics import GUID
+    uploaded_by = Column(GUID(), ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     # Relationships

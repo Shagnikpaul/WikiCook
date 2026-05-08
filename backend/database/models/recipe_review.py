@@ -13,7 +13,8 @@ class RecipeReview(Base):
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     recipe_id = Column(String, ForeignKey("recipes.id", ondelete="CASCADE"), nullable=False)
-    user_id = Column(String, ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
+    from fastapi_users_db_sqlalchemy.generics import GUID
+    user_id = Column(GUID(), ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
     rating = Column(Integer, nullable=False)          # 1-5
     comment = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

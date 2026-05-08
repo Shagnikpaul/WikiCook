@@ -11,6 +11,7 @@ class MealPlan(Base):
     __tablename__ = "meal_plans"
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    user_id = Column(String, ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
+    from fastapi_users_db_sqlalchemy.generics import GUID
+    user_id = Column(GUID(), ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
     start_date = Column(Date, nullable=False)
     end_date = Column(Date, nullable=False)

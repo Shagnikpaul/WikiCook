@@ -12,7 +12,8 @@ class UserPreferences(Base):
     __tablename__ = "user_preferences"
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    user_id = Column(String, ForeignKey("user.id", ondelete="CASCADE"), nullable=False, unique=True)
+    from fastapi_users_db_sqlalchemy.generics import GUID
+    user_id = Column(GUID(), ForeignKey("user.id", ondelete="CASCADE"), nullable=False, unique=True)
     dietary_preferences = Column(ARRAY(String), nullable=True)  # e.g., ["vegetarian", "gluten-free"]
     favorite_cuisines = Column(ARRAY(String), nullable=True)    # e.g., ["italian", "indian", "chinese"]
     skill_level = Column(String(50), nullable=True)             # e.g., "beginner", "intermediate", "expert"

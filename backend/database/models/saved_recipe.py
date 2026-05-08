@@ -10,6 +10,7 @@ class SavedRecipe(Base):
     """
     __tablename__ = "saved_recipes"
 
-    user_id = Column(String, ForeignKey("user.id", ondelete="CASCADE"), primary_key=True)
+    from fastapi_users_db_sqlalchemy.generics import GUID
+    user_id = Column(GUID(), ForeignKey("user.id", ondelete="CASCADE"), primary_key=True)
     recipe_id = Column(String, ForeignKey("recipes.id", ondelete="CASCADE"), primary_key=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

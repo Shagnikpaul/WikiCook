@@ -26,7 +26,8 @@ class EditSuggestion(Base):
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     recipe_id = Column(String, ForeignKey("recipes.id", ondelete="CASCADE"), nullable=False)
-    proposed_by = Column(String, ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
+    from fastapi_users_db_sqlalchemy.generics import GUID
+    proposed_by = Column(GUID(), ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
     change_type = Column(SQLEnum(ChangeType), nullable=False)
     diff = Column(JSONB, nullable=False)
     reason = Column(Text, nullable=True)

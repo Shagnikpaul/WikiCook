@@ -1,60 +1,59 @@
-from fastapi import Depends, HTTPException, Request
-from sqlalchemy.orm import Session
-from database.connection import get_db
+import uuid
+from typing import Optional
+from fastapi import Depends, Request
+from fastapi_users import BaseUserManager, FastAPIUsers, UUIDIDMixin
+from fastapi_users.authentication import (
+    AuthenticationBackend,
+    CookieTransport,
+    JWTStrategy,
+)
+from fastapi_users_db_sqlalchemy import SQLAlchemyUserDatabase
+from sqlalchemy.ext.asyncio import AsyncSession
+import os
 
+from database.connection import get_async_session
+from database.models.user import User
 
-async def get_current_user(request: Request, db: Session = Depends(get_db)):
+SECRET = os.getenv("JWT_SECRET", "super-secret-key-change-this-in-production")
 
-    session_token = request.cookies.get("better-auth.session_token")
+async def get_user_db(session: AsyncSession = Depends(get_async_session)):
+    yield SQLAlchemyUserDatabase(session, User)
 
-    if not session_token:
-        raise HTTPException(status_code=401, detail="Not authenticated")
+class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
+    reset_password_token_secret = SECRET
+    verification_token_secret = SECRET
 
-    # The cookie value format from Better Auth is "token.signature"
-    # We need just the token part to look up in the session table
-    token = session_token.split(".")[0] if "." in session_token else session_token
+    async def on_after_register(self, user: User, request: Optional[Request] = None):
+        print(f"User {user.id} has registered.")
 
-    result = db.execute(
-        __import__('sqlalchemy').text(
-            "SELECT \"userId\", \"expiresAt\" FROM session WHERE token = :token"
-        ),
-        {"token": token}
-    ).fetchone()
+    async def on_after_forgot_password(
+        self, user: User, token: str, request: Optional[Request] = None
+    ):
+        print(f"User {user.id} has forgot their password. Reset token: {token}")
 
-    if not result:
-        raise HTTPException(status_code=401, detail="Invalid session")
+    async def on_after_request_verify(
+        self, user: User, token: str, request: Optional[Request] = None
+    ):
+        print(f"Verification requested for user {user.id}. Verification token: {token}")
 
-    user_id, expires_at = result
-    from datetime import datetime, timezone
-    if expires_at and expires_at < datetime.now(timezone.utc):
-        raise HTTPException(status_code=401, detail="Session expired")
+async def get_user_manager(user_db: SQLAlchemyUserDatabase = Depends(get_user_db)):
+    yield UserManager(user_db)
 
-    return user_id
+cookie_transport = CookieTransport(cookie_name="wikicook-auth", cookie_max_age=3600)
 
+def get_jwt_strategy() -> JWTStrategy:
+    return JWTStrategy(secret=SECRET, lifetime_seconds=3600)
 
-async def get_optional_user(request: Request, db: Session = Depends(get_db)):
-    session_token = request.cookies.get("better-auth.session_token")
+auth_backend = AuthenticationBackend(
+    name="jwt",
+    transport=cookie_transport,
+    get_strategy=get_jwt_strategy,
+)
 
-    if not session_token:
-        return None
+fastapi_users = FastAPIUsers[User, uuid.UUID](
+    get_user_manager,
+    [auth_backend],
+)
 
-    # The cookie value format from Better Auth is "token.signature"
-    # We need just the token part to look up in the session table
-    token = session_token.split(".")[0] if "." in session_token else session_token
-
-    result = db.execute(
-        __import__('sqlalchemy').text(
-            "SELECT \"userId\", \"expiresAt\" FROM session WHERE token = :token"
-        ),
-        {"token": token}
-    ).fetchone()
-
-    if not result:
-        return None
-
-    user_id, expires_at = result
-    from datetime import datetime, timezone
-    if expires_at and expires_at < datetime.now(timezone.utc):
-        return None
-
-    return user_id
+get_current_user = fastapi_users.current_user(active=True)
+get_optional_user = fastapi_users.current_user(active=True, optional=True)

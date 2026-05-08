@@ -28,7 +28,8 @@ class Recipe(Base):
     __tablename__ = "recipes"
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    creator_id = Column(String, ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
+    from fastapi_users_db_sqlalchemy.generics import GUID
+    creator_id = Column(GUID(), ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
     title = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
     
