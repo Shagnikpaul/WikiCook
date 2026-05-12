@@ -5,7 +5,7 @@ from routes.user_routes import router as user_router
 from routes.recipe_routes import router as recipe_router
 from routes.step_routes import router as step_router
 from auth import fastapi_users, auth_backend
-from schemas.user_schema import UserRead, UserCreate
+from schemas.user_schema import UserRead, UserCreate, UserUpdate
 
 # Import models to ensure they are registered with Base.metadata
 from database.models import (
