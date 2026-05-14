@@ -2,6 +2,7 @@
 
 import { GalleryVerticalEndIcon } from "lucide-react"
 import { Link, useNavigate } from "@tanstack/react-router";
+import React, { useState } from "react";
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -11,15 +12,31 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { login, register } from "@/lib/auth";
 
 export function SignupForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  const navigate = useNavigate()
+  const [email, setMail] = useState("");
+  const [password, setPassword] = useState("")
+  const [name, setName] = useState("")
+  const navigate = useNavigate();
+  const handleSubmit = async (e: React.SubmitEvent) => {
+    e.preventDefault();
+    await register({ name, email, password });
+
+    console.log('Success in signup');
+    navigate({
+      to: '/login'
+    })
+  }
+
+
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <form>
+      <form onSubmit={handleSubmit}>
         <FieldGroup>
           <div className="flex flex-col items-center gap-2 text-center">
             <a
@@ -42,6 +59,7 @@ export function SignupForm({
               id="email"
               type="email"
               placeholder="m@example.com"
+              onChange={(e) => setMail(e.target.value)}
               required
             />
           </Field>
@@ -51,6 +69,7 @@ export function SignupForm({
               id="password"
               type="password"
               placeholder="Password"
+              onChange={(e) => setPassword(e.target.value)}
               required
             />
           </Field>
@@ -60,6 +79,7 @@ export function SignupForm({
               id="username"
               type="text"
               placeholder="Joe2341"
+              onChange={(e) => setName(e.target.value)}
               required
             />
           </Field>

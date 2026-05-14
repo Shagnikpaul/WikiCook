@@ -2,6 +2,7 @@
 
 import { GalleryVerticalEndIcon } from "lucide-react"
 import { Link } from "@tanstack/react-router";
+import { useState } from "react";
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -16,6 +17,8 @@ export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const [mail, setMail] = useState("");
+  const [password, setPassword] = useState("")
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <form>
@@ -40,6 +43,7 @@ export function LoginForm({
             <Input
               id="email"
               type="email"
+              onChange={(e) => setMail(e.target.value)}
               placeholder="m@example.com"
               required
             />
@@ -49,16 +53,17 @@ export function LoginForm({
             <Input
               id="password"
               type="password"
+              onChange={(e) => setPassword(e.target.value)}
               required
             />
           </Field>
           <Field>
             <Button type="submit">Login</Button>
           </Field>
-          
+
         </FieldGroup>
       </form>
-      
+
     </div>
   )
 }
