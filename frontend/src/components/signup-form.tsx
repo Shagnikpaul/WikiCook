@@ -24,12 +24,17 @@ export function SignupForm({
   const navigate = useNavigate();
   const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
-    await register({ name, email, password });
+    const res = await register({ name, email, password });
 
     console.log('Success in signup');
-    navigate({
-      to: '/login'
-    })
+    if (res === true)
+      navigate({
+        to: '/login'
+      })
+    else {
+      console.log('cant proceed auth failed...');
+
+    }
   }
 
 

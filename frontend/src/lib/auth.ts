@@ -1,7 +1,7 @@
 const API = import.meta.env.VITE_API_URL
 
 type LoginInput = {
-    email: string
+    username: string
     password: string
 }
 
@@ -12,20 +12,29 @@ type RegisterInput = {
 }
 
 export async function login(data: LoginInput) {
+    const body = new URLSearchParams()
+
+    body.append("grant_type", "password")
+    body.append("username", data.username)
+    body.append("password", data.password)
+
     const res = await fetch(`${API}/auth/jwt/login`, {
         method: "POST",
         headers: {
-            "Content-Type": "application/json",
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Accept": "application/json",
         },
         credentials: "include",
-        body: JSON.stringify(data),
+        body,
     })
 
     if (!res.ok) {
+        console.log(await res.text())
         throw new Error("Invalid credentials")
     }
+    console.log('Login status : ', res.status);
 
-    return res.json()
+    return true
 }
 
 export async function register(data: RegisterInput) {

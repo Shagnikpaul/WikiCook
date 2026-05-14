@@ -1,8 +1,8 @@
 "use client"
 
 import { GalleryVerticalEndIcon } from "lucide-react"
-import { Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { Link, useNavigate } from "@tanstack/react-router";
+import React, { useState } from "react";
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -12,16 +12,39 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { login } from "@/lib/auth";
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  const [mail, setMail] = useState("");
+  const [username, setUserName] = useState("");
   const [password, setPassword] = useState("")
+  const navigate = useNavigate();
+
+
+  const handleSubmit = async (e: React.SubmitEvent) => {
+    e.preventDefault();
+    try {
+      login(
+        {
+          username,
+          password
+        }
+      )
+      navigate({
+        to: '/add-recipe'
+      })
+    } catch (e) {
+      console.log('Error in login....');
+
+    }
+
+
+  }
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <form>
+      <form onSubmit={handleSubmit}>
         <FieldGroup>
           <div className="flex flex-col items-center gap-2 text-center">
             <a
@@ -39,12 +62,12 @@ export function LoginForm({
             </FieldDescription>
           </div>
           <Field>
-            <FieldLabel htmlFor="email">Email</FieldLabel>
+            <FieldLabel htmlFor="username">User Name</FieldLabel>
             <Input
-              id="email"
-              type="email"
-              onChange={(e) => setMail(e.target.value)}
-              placeholder="m@example.com"
+              id="username"
+              type="text"
+              onChange={(e) => setUserName(e.target.value)}
+              placeholder="Joe"
               required
             />
           </Field>
