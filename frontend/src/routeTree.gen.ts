@@ -11,7 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as AboutRouteImport } from './routes/about'
+import { Route as AddRecipeRouteImport } from './routes/add-recipe'
 import { Route as IndexRouteImport } from './routes/index'
 
 const SignupRoute = SignupRouteImport.update({
@@ -24,9 +24,9 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AboutRoute = AboutRouteImport.update({
-  id: '/about',
-  path: '/about',
+const AddRecipeRoute = AddRecipeRouteImport.update({
+  id: '/add-recipe',
+  path: '/add-recipe',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -37,34 +37,34 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
+  '/add-recipe': typeof AddRecipeRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
+  '/add-recipe': typeof AddRecipeRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
+  '/add-recipe': typeof AddRecipeRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/login' | '/signup'
+  fullPaths: '/' | '/add-recipe' | '/login' | '/signup'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/login' | '/signup'
-  id: '__root__' | '/' | '/about' | '/login' | '/signup'
+  to: '/' | '/add-recipe' | '/login' | '/signup'
+  id: '__root__' | '/' | '/add-recipe' | '/login' | '/signup'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AboutRoute: typeof AboutRoute
+  AddRecipeRoute: typeof AddRecipeRoute
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
 }
@@ -85,11 +85,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/about': {
-      id: '/about'
-      path: '/about'
-      fullPath: '/about'
-      preLoaderRoute: typeof AboutRouteImport
+    '/add-recipe': {
+      id: '/add-recipe'
+      path: '/add-recipe'
+      fullPath: '/add-recipe'
+      preLoaderRoute: typeof AddRecipeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -104,7 +104,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AboutRoute: AboutRoute,
+  AddRecipeRoute: AddRecipeRoute,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
 }

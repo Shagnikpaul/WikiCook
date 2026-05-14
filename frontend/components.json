@@ -6,12 +6,13 @@
   "tailwind": {
     "config": "",
     "css": "src/styles.css",
-    "baseColor": "zinc",
+    "baseColor": "olive",
     "cssVariables": true,
     "prefix": ""
   },
   "iconLibrary": "lucide",
-  "menuColor": "default",
+  "rtl": false,
+  "menuColor": "default-translucent",
   "menuAccent": "subtle",
   "aliases": {
     "components": "@/components",
@@ -21,6 +22,6 @@
     "hooks": "@/hooks"
   },
   "registries": {
-    "@diceui": "https://diceui.com/r/{name}.json"
+    "@shadcnblocks": "https://shadcnblocks.com/r/{name}.json"
   }
 }
