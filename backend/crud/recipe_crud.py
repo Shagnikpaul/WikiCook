@@ -179,6 +179,123 @@ def publish_recipe(db: Session, recipe_id: str, current_user_id: str):
     db.refresh(recipe)
     return recipe
 
+
+def update_recipe(db: Session, recipe_id: str, current_user_id: str, update_data: dict):
+    recipe = db.query(Recipe).filter(Recipe.id == recipe_id).first()
+    if not recipe:
+        raise HTTPException(status_code=404, detail="Recipe not found")
+    if recipe.creator_id != current_user_id:
+        raise HTTPException(status_code=403, detail="Not authorized to edit this recipe")
+
+    # Only update fields that were actually provided
+    for field in ["title", "description", "servings", "prep_time_minutes", "cook_time_minutes", "visibility"]:
+        if field in update_data and update_data[field] is not None:
+            if field == "visibility":
+                setattr(recipe, field, VisibilityType(update_data[field]))
+            else:
+                setattr(recipe, field, update_data[field])
+
+    db.commit()
+    db.refresh(recipe)
+    return recipe
+
+
+def delete_recipe(db: Session, recipe_id: str, current_user_id: str):
+    recipe = db.query(Recipe).filter(Recipe.id == recipe_id).first()
+    if not recipe:
+        raise HTTPException(status_code=404, detail="Recipe not found")
+    if recipe.creator_id != current_user_id:
+        raise HTTPException(status_code=403, detail="Not authorized to delete this recipe")
+
+    db.delete(recipe)
+    db.commit()
+    return {"message": "Recipe deleted"}
+
+
+def update_ingredient_in_recipe(db: Session, recipe_id: str, ingredient_entry_id: str, current_user_id: str, update_data: dict):
+    recipe = db.query(Recipe).filter(Recipe.id == recipe_id).first()
+    if not recipe:
+        raise HTTPException(status_code=404, detail="Recipe not found")
+    if recipe.creator_id != current_user_id:
+        raise HTTPException(status_code=403, detail="Not authorized to edit this recipe")
+
+    entry = db.query(RecipeIngredient).filter(
+        RecipeIngredient.id == ingredient_entry_id,
+        RecipeIngredient.recipe_id == recipe_id
+    ).first()
+    if not entry:
+        raise HTTPException(status_code=404, detail="Ingredient entry not found")
+
+    for field in ["quantity", "unit", "preparation_note"]:
+        if field in update_data:
+            setattr(entry, field, update_data[field])
+
+    db.commit()
+    db.refresh(entry)
+    return entry
+
+
+def delete_ingredient_from_recipe(db: Session, recipe_id: str, ingredient_entry_id: str, current_user_id: str):
+    recipe = db.query(Recipe).filter(Recipe.id == recipe_id).first()
+    if not recipe:
+        raise HTTPException(status_code=404, detail="Recipe not found")
+    if recipe.creator_id != current_user_id:
+        raise HTTPException(status_code=403, detail="Not authorized to edit this recipe")
+
+    entry = db.query(RecipeIngredient).filter(
+        RecipeIngredient.id == ingredient_entry_id,
+        RecipeIngredient.recipe_id == recipe_id
+    ).first()
+    if not entry:
+        raise HTTPException(status_code=404, detail="Ingredient entry not found")
+
+    db.delete(entry)
+    db.commit()
+    return {"message": "Ingredient removed"}
+
+
+def update_step_in_recipe(db: Session, recipe_id: str, step_id: str, current_user_id: str, update_data: dict):
+    recipe = db.query(Recipe).filter(Recipe.id == recipe_id).first()
+    if not recipe:
+        raise HTTPException(status_code=404, detail="Recipe not found")
+    if recipe.creator_id != current_user_id:
+        raise HTTPException(status_code=403, detail="Not authorized to edit this recipe")
+
+    step = db.query(RecipeStep).filter(
+        RecipeStep.id == step_id,
+        RecipeStep.recipe_id == recipe_id
+    ).first()
+    if not step:
+        raise HTTPException(status_code=404, detail="Step not found")
+
+    for field in ["step_number", "instruction", "estimated_time_minutes"]:
+        if field in update_data:
+            setattr(step, field, update_data[field])
+
+    db.commit()
+    db.refresh(step)
+    return step
+
+
+def delete_step_from_recipe(db: Session, recipe_id: str, step_id: str, current_user_id: str):
+    recipe = db.query(Recipe).filter(Recipe.id == recipe_id).first()
+    if not recipe:
+        raise HTTPException(status_code=404, detail="Recipe not found")
+    if recipe.creator_id != current_user_id:
+        raise HTTPException(status_code=403, detail="Not authorized to edit this recipe")
+
+    step = db.query(RecipeStep).filter(
+        RecipeStep.id == step_id,
+        RecipeStep.recipe_id == recipe_id
+    ).first()
+    if not step:
+        raise HTTPException(status_code=404, detail="Step not found")
+
+    db.delete(step)
+    db.commit()
+    return {"message": "Step removed"}
+
+
 def add_media_to_step(db: Session, step_id: str, uploader_id: str, media_type: str, file_name: str):
     # Verify the uploader owns the recipe associated with this step
     step = db.query(RecipeStep).filter(RecipeStep.id == step_id).first()

@@ -14,7 +14,7 @@ import os
 from database.connection import get_async_session
 from database.models.user import User
 
-SECRET = os.getenv("JWT_SECRET", "super-secret-key-change-this-in-production")
+SECRET = os.getenv("JWT_SECRET", "super-secret-key-for-development-only")
 
 async def get_user_db(session: AsyncSession = Depends(get_async_session)):
     yield SQLAlchemyUserDatabase(session, User)

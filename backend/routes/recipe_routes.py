@@ -2,7 +2,12 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from database.connection import get_db
-from crud.recipe_crud import get_recipes, get_recipe_by_id, create_recipe, add_ingredient_to_recipe, add_step_to_recipe, publish_recipe
+from crud.recipe_crud import (
+    get_recipes, get_recipe_by_id, create_recipe, add_ingredient_to_recipe,
+    add_step_to_recipe, publish_recipe, update_recipe, delete_recipe,
+    update_ingredient_in_recipe, delete_ingredient_from_recipe,
+    update_step_in_recipe, delete_step_from_recipe
+)
 from auth import get_current_user, get_optional_user
 from database.models.user import User
 from typing import Optional
@@ -23,6 +28,24 @@ class RecipeIngredientAdd(BaseModel):
 class RecipeStepAdd(BaseModel):
     step_number: int
     instruction: str
+    estimated_time_minutes: Optional[int] = None
+
+class RecipeUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    servings: Optional[int] = None
+    prep_time_minutes: Optional[int] = None
+    cook_time_minutes: Optional[int] = None
+    visibility: Optional[str] = None
+
+class IngredientUpdate(BaseModel):
+    quantity: Optional[float] = None
+    unit: Optional[str] = None
+    preparation_note: Optional[str] = None
+
+class StepUpdate(BaseModel):
+    step_number: Optional[int] = None
+    instruction: Optional[str] = None
     estimated_time_minutes: Optional[int] = None
 
 router = APIRouter(prefix="/recipes", tags=["Recipes"])
@@ -103,3 +126,85 @@ def publish(
 ):
     recipe = publish_recipe(db, recipe_id, user.id)
     return {"message": "Recipe published", "status": recipe.status.value}
+
+
+@router.patch("/{recipe_id}")
+def edit_recipe(
+    recipe_id: str,
+    updates: RecipeUpdate,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Edit recipe metadata (title, description, servings, times, visibility).
+    """
+    recipe = update_recipe(db, recipe_id, user.id, updates.model_dump(exclude_unset=True))
+    return {"message": "Recipe updated", "recipe_id": recipe.id}
+
+
+@router.delete("/{recipe_id}")
+def remove_recipe(
+    recipe_id: str,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Delete a recipe and all its ingredients, steps, and media.
+    """
+    return delete_recipe(db, recipe_id, user.id)
+
+
+@router.patch("/{recipe_id}/ingredients/{entry_id}")
+def edit_ingredient(
+    recipe_id: str,
+    entry_id: str,
+    updates: IngredientUpdate,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Edit an ingredient entry (quantity, unit, preparation note).
+    """
+    entry = update_ingredient_in_recipe(db, recipe_id, entry_id, user.id, updates.model_dump(exclude_unset=True))
+    return {"message": "Ingredient updated"}
+
+
+@router.delete("/{recipe_id}/ingredients/{entry_id}")
+def remove_ingredient(
+    recipe_id: str,
+    entry_id: str,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Remove an ingredient from a recipe.
+    """
+    return delete_ingredient_from_recipe(db, recipe_id, entry_id, user.id)
+
+
+@router.patch("/{recipe_id}/steps/{step_id}")
+def edit_step(
+    recipe_id: str,
+    step_id: str,
+    updates: StepUpdate,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Edit a cooking step (instruction, step number, estimated time).
+    """
+    step = update_step_in_recipe(db, recipe_id, step_id, user.id, updates.model_dump(exclude_unset=True))
+    return {"message": "Step updated"}
+
+
+@router.delete("/{recipe_id}/steps/{step_id}")
+def remove_step(
+    recipe_id: str,
+    step_id: str,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Remove a step from a recipe.
+    """
+    return delete_step_from_recipe(db, recipe_id, step_id, user.id)

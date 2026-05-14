@@ -1,4 +1,5 @@
 from sqlalchemy import Column, String, Integer, Text, DateTime, ForeignKey, Enum as SQLEnum, Numeric
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from database.connection import Base
@@ -41,6 +42,11 @@ class Recipe(Base):
     prep_time_minutes = Column(Integer, nullable=True)
     cook_time_minutes = Column(Integer, nullable=True)
     confidence_score = Column(Numeric(3, 2), nullable=True)
+
+    # AI-generation tracking
+    youtube_url = Column(Text, nullable=True)             # Original video link
+    ai_job_id = Column(String, ForeignKey("ai_jobs.id"), nullable=True)  # Link to generation job
+    field_confidence = Column(JSONB, nullable=True)       # {"title": 0.95, "servings": 0.60}
     
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())

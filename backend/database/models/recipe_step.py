@@ -1,4 +1,5 @@
 from sqlalchemy import Column, String, Integer, Text, ForeignKey
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship
 from database.connection import Base
 import uuid
@@ -14,6 +15,9 @@ class RecipeStep(Base):
     step_number = Column(Integer, nullable=False)
     instruction = Column(Text, nullable=False)
     estimated_time_minutes = Column(Integer, nullable=True)
+
+    # AI confidence tracking
+    confidence = Column(JSONB, nullable=True)             # {"instruction": 0.92, "time": 0.45}
 
     # Relationships
     recipe = relationship("Recipe", back_populates="steps")
