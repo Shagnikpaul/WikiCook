@@ -45,6 +45,7 @@ class Recipe(Base):
 
     # AI-generation tracking
     youtube_url = Column(Text, nullable=True)             # Original video link
+    external_source_url = Column(Text, nullable=True)     # Link to full recipe on a website
     # Note: ai_job_id link is on AIJob.recipe_id (one-direction FK, avoids ambiguity)
     field_confidence = Column(JSONB, nullable=True)       # {"title": 0.95, "servings": 0.60}
     

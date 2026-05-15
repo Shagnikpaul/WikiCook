@@ -44,27 +44,27 @@ def validate_youtube_url(url: str) -> str:
 def fetch_transcript(video_id: str) -> str | None:
     """
     Fetches the transcript (speech) from a YouTube video.
-    
+
     Strategy:
-    1. Try English captions first (manual or auto-generated)
-    2. If English isn't available, try any available language
-    3. If no captions exist at all, return None (don't crash)
-    
+    1. Try manually created English captions (highest quality)
+    2. Try YouTube auto-generated English captions
+    3. Try ANY available language caption
+    4. If nothing found, return None (caller will use Whisper fallback)
+
     Returns the full transcript as a single string, or None.
     """
     try:
-        # First, try to get English transcript
         transcript_list = YouTubeTranscriptApi.list_transcripts(video_id)
-        
-        # Try manually created English captions first (highest quality)
+
+        # Priority 1: Manually created English captions
         try:
             transcript = transcript_list.find_manually_created_transcript(['en'])
         except Exception:
-            # Fall back to auto-generated English
+            # Priority 2: Auto-generated English captions
             try:
                 transcript = transcript_list.find_generated_transcript(['en'])
             except Exception:
-                # Fall back to ANY available language
+                # Priority 3: Any available language
                 try:
                     available = list(transcript_list)
                     if available:
@@ -73,12 +73,12 @@ def fetch_transcript(video_id: str) -> str | None:
                         return None
                 except Exception:
                     return None
-        
+
         # Convert transcript segments into a single string
         segments = transcript.fetch()
         full_text = " ".join(segment.get("text", "") for segment in segments)
         return full_text.strip() if full_text.strip() else None
-        
+
     except Exception:
         # Video has no captions at all, or API is blocked
         return None
@@ -123,47 +123,61 @@ def fetch_metadata(url: str) -> dict:
         raise ValueError(f"Could not access video: {str(e)}")
 
 
-def collect_video_data(url: str) -> dict:
+def collect_video_data(url: str, job_id: str | None = None) -> dict:
     """
     Main function — collects ALL available data from a YouTube video.
-    
+
     This is the function that the AI service will call.
-    
+
+    Args:
+        url: The full YouTube URL
+        job_id: Optional job UUID used for naming the temp audio file.
+                Must be provided when Whisper fallback may be needed.
+
     Returns a dict with:
     - video_id: The YouTube video ID
     - title: Video title
     - description: Video description box content
     - thumbnail: Thumbnail URL
     - duration: Duration in seconds
-    - transcript: Full speech text (or None if unavailable)
+    - transcript: Full speech text (always populated)
     - has_transcript: Boolean flag
-    
+    - transcript_source: 'youtube_captions' | 'whisper' | None
+
     Raises ValueError if:
     - URL is invalid
     - Video is too long
     - Video cannot be accessed
-    - No useful text sources found (no transcript AND no description)
+    - No YouTube captions AND Whisper transcription fails
     """
     # Step 1: Validate URL and extract video ID
     video_id = validate_youtube_url(url)
-    
+
     # Step 2: Fetch metadata (title, description, thumbnail, duration)
     metadata = fetch_metadata(url)
-    
-    # Step 3: Fetch transcript (may return None)
+
+    # Step 3: Try to get YouTube captions first
+    print(f"[YOUTUBE] Looking for captions for video: {video_id}")
     transcript = fetch_transcript(video_id)
-    
-    # Step 4: Check if we have enough data to work with
-    has_transcript = transcript is not None
-    has_description = bool(metadata["description"] and len(metadata["description"]) > 50)
-    
-    if not has_transcript and not has_description:
-        raise ValueError(
-            "This video doesn't have enough text information "
-            "(no captions and no meaningful description). "
-            "Please try a different video or create the recipe manually."
-        )
-    
+    transcript_source = None
+
+    if transcript:
+        print(f"[YOUTUBE] Found YouTube captions ({len(transcript)} chars)")
+        transcript_source = "youtube_captions"
+    else:
+        # Step 4: No YouTube captions — use Groq Whisper
+        print(f"[YOUTUBE] No captions found. Falling back to Groq Whisper...")
+        if not job_id:
+            raise ValueError(
+                "This video has no captions available and cannot be processed "
+                "without a job ID for audio transcription."
+            )
+        # This will raise ValueError with a user-friendly message if it fails
+        from services.whisper_service import transcribe_from_url
+        transcript = transcribe_from_url(url, job_id)
+        transcript_source = "whisper"
+        print(f"[YOUTUBE] Whisper transcription complete ({len(transcript)} chars)")
+
     return {
         "video_id": video_id,
         "title": metadata["title"],
@@ -172,5 +186,6 @@ def collect_video_data(url: str) -> dict:
         "duration": metadata["duration"],
         "uploader": metadata["uploader"],
         "transcript": transcript,
-        "has_transcript": has_transcript,
+        "has_transcript": True,
+        "transcript_source": transcript_source,
     }

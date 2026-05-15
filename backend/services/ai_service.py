@@ -44,6 +44,8 @@ class ExtractedRecipe(BaseModel):
     title: str
     title_confidence: float
     
+    description: str                             # 2-3 sentence description of the dish
+    
     servings: int | None = None
     servings_confidence: float
     
@@ -57,6 +59,8 @@ class ExtractedRecipe(BaseModel):
     cuisine_confidence: float
     
     diet_tags: list[str]                         # e.g. ["vegetarian", "gluten-free"]
+    
+    source_url: str | None = None                # Link to the full recipe on a website if mentioned
     
     ingredients: list[ExtractedIngredient]
     steps: list[ExtractedStep]
@@ -73,7 +77,7 @@ def build_prompt(title: str, description: str | None, transcript: str | None) ->
     """
     prompt = f"""You are a professional recipe extraction AI for WikiCook, a community recipe platform.
 
-Your job is to extract a structured cooking recipe from the following sources.
+Your job is to extract a COMPLETE and DETAILED cooking recipe from the following sources.
 Not all sources may be available. Use whatever is provided.
 
 === VIDEO TITLE ===
@@ -104,17 +108,42 @@ Not all sources may be available. Use whatever is provided.
    - 0.1-0.5: Guessed or very uncertain
    - 0.0: Information not found at all (set the value to null)
 
-4. STEPS:
-   - Extract in chronological cooking order
-   - Each step should be one clear action
-   - Estimate time only if clearly indicated, otherwise set to null
+4. DESCRIPTION:
+   - Write 2-3 sentences describing the dish, what it tastes like, and its origin
+   - Make it appetizing and informative
 
-5. TAGS:
+5. PREP AND COOK TIME:
+   - ALWAYS estimate prep_time_minutes and cook_time_minutes
+   - If not explicitly stated, estimate based on the steps and ingredients
+   - For prep time: consider chopping, marinating, mixing
+   - For cook time: consider frying, simmering, baking
+   - Set confidence to 0.3-0.5 if estimated, 0.8+ if explicitly stated
+   
+6. STEPS — THE "CHEF'S BRAIN" APPROACH:
+   - ADAPT TO COMPLEXITY: If the video is a 10-minute masterclass, capture every nuance.
+   - FLAVOR SOURCE OBSESSION: Pay extreme attention to WHERE ingredients come from. If the chef says "use the oil we just fried onions in," DO NOT just say "Oil." Say "Oil (reserved from frying onions)." These are the secrets to flavor.
+   - SEQUENCE INTEGRITY (LAYERING): For dishes like Biryani or Lasagna, do NOT combine layering steps. Capture the exact order: "Layer 1: Chicken," "Layer 2: Half the rice," "Layer 3: Herbs/Onions," etc.
+   - CAPTURE THE ESSENCE: Identify the chef's unique "secrets" or signature techniques and make sure they aren't lost.
+   - ACTIONS OVER WORDS: Each step should be one clear action, but include the "Why" if it helps the outcome (e.g., "Whisk vigorously to incorporate air").
+   - CLARITY IS KING: Avoid "fluff" or stories. Stick to cooking instructions, visual cues, and temperatures.
+   - Aim for a result that feels like the chef wrote a professional cookbook version of their video.
+
+7. INGREDIENTS — BE OBSESSIVE:
+   - Include preparation notes for each ingredient (diced, minced, melted, 80/20 fat ratio, etc.)
+   - Use the specific version of the ingredient (e.g., "Filtered water," "Onion-infused oil," "Reserved pasta water").
+   - Include ALL ingredients mentioned, even if they aren't in the description box.
+   - If a quantity is mentioned in the speech but not the description, use it.
+
+8. TAGS:
    - Detect cuisine type (Indian, Italian, Mexican, Chinese, etc.)
    - Detect dietary labels only if confident (vegan, vegetarian, gluten-free, etc.)
-   - Only tag what you are sure about
 
-6. LANGUAGE:
+9. SOURCE URL:
+   - Look closely at the VIDEO DESCRIPTION.
+   - If there is a link that says "Full recipe", "Printable recipe", or "Cook at [link]", extract that URL.
+   - If no external recipe link is found, set it to null.
+
+10. LANGUAGE:
    - Always output in English, even if the source is in another language
    - Translate ingredient names and instructions to English
 
@@ -123,37 +152,55 @@ You MUST respond with ONLY a valid JSON object matching this exact structure:
 {{
   "title": "Recipe Title",
   "title_confidence": 0.95,
+  "description": "A rich and creamy North Indian curry made with tender chicken in a buttery tomato-based gravy. This restaurant-style dish is known for its velvety texture and aromatic spices.",
   "servings": 4,
   "servings_confidence": 0.8,
-  "prep_time_minutes": 15,
+  "prep_time_minutes": 20,
   "prep_time_confidence": 0.7,
-  "cook_time_minutes": 30,
+  "cook_time_minutes": 35,
   "cook_time_confidence": 0.7,
   "cuisine": "Indian",
   "cuisine_confidence": 0.9,
   "diet_tags": ["non-vegetarian"],
+  "source_url": "https://www.example.com/recipe",
   "ingredients": [
     {{
-      "name": "Chicken",
+      "name": "Chicken breast",
       "quantity": 500,
       "unit": "grams",
-      "preparation_note": "boneless, cubed",
+      "preparation_note": "boneless, cut into 2-inch cubes",
       "name_confidence": 0.98,
       "quantity_confidence": 0.85,
       "unit_confidence": 0.85
+    }},
+    {{
+      "name": "Salt",
+      "quantity": null,
+      "unit": null,
+      "preparation_note": "to taste",
+      "name_confidence": 0.95,
+      "quantity_confidence": 0.0,
+      "unit_confidence": 0.0
     }}
   ],
   "steps": [
     {{
-      "instruction": "Heat oil in a pan over medium heat",
-      "estimated_time_minutes": 2,
+      "instruction": "Cut the chicken breast into 2-inch cubes and pat them dry with a paper towel",
+      "estimated_time_minutes": 5,
       "instruction_confidence": 0.92,
       "time_confidence": 0.6
+    }},
+    {{
+      "instruction": "In a mixing bowl, combine 1 tablespoon of ginger-garlic paste, red chili powder, and a pinch of salt",
+      "estimated_time_minutes": 2,
+      "instruction_confidence": 0.90,
+      "time_confidence": 0.5
     }}
   ]
 }}
 
 IMPORTANT: Return ONLY the JSON object. No markdown, no explanation, no code fences.
+Remember: More detailed steps are ALWAYS better. Aim for 10-20 steps.
 """
     return prompt
 
@@ -177,6 +224,16 @@ def extract_recipe(title: str, description: str | None, transcript: str | None) 
     # Initialize the Groq client
     client = Groq(api_key=api_key)
     
+    # --- Smart Truncation ---
+    # Groq's free tier has a TPM (Tokens Per Minute) limit (Total = Prompt + Max Tokens).
+    # By using a reasonable Max Tokens (3000), we leave ~9,000 tokens for the prompt.
+    # 25,000 characters is ~6,000 tokens, which covers a ~45 minute video easily.
+    MAX_CHARS = 25000
+    if transcript and len(transcript) > MAX_CHARS:
+        print(f"[AI SERVICE] Transcript extremely long ({len(transcript)} chars). Truncating to {MAX_CHARS}...")
+        # Only truncate if it's truly massive (e.g., a 1-hour documentary)
+        transcript = transcript[:20000] + "\n... [truncated for extreme length] ...\n" + transcript[-5000:]
+
     # Build the prompt from all available sources
     prompt = build_prompt(title, description, transcript)
     
@@ -187,7 +244,7 @@ def extract_recipe(title: str, description: str | None, transcript: str | None) 
         messages=[
             {
                 "role": "system",
-                "content": "You are a recipe extraction AI. You MUST respond with ONLY valid JSON. No other text."
+                "content": "You are a recipe extraction AI. You MUST respond with ONLY valid JSON. No other text. Be extremely detailed in your steps — break every action into its own step."
             },
             {
                 "role": "user", 
@@ -196,7 +253,7 @@ def extract_recipe(title: str, description: str | None, transcript: str | None) 
         ],
         response_format={"type": "json_object"},
         temperature=0.1,      # Low temperature = more precise, less creative
-        max_tokens=4096,       # Enough for a full recipe
+        max_tokens=3000,       # 3000 is plenty for JSON; leaves room for the transcript in TPM limits
     )
     
     # Extract the JSON string from the response

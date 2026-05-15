@@ -74,8 +74,11 @@ def get_recipe_by_id(db: Session, recipe_id: str, current_user_id: Optional[str]
     ingredients_out = [
         {
             "name": r_ing.ingredient.name,
-            "quantity": r_ing.quantity,
-            "unit": r_ing.unit or r_ing.ingredient.default_unit
+            "quantity": float(r_ing.quantity) if r_ing.quantity is not None else None,
+            "unit": r_ing.unit or r_ing.ingredient.default_unit,
+            "preparation_note": r_ing.preparation_note,
+            "confidence": r_ing.confidence,
+            "ai_note": r_ing.ai_note,
         }
         for r_ing in recipe.ingredients
     ]
@@ -85,6 +88,8 @@ def get_recipe_by_id(db: Session, recipe_id: str, current_user_id: Optional[str]
         {
             "step_number": step.step_number,
             "instruction": step.instruction,
+            "estimated_time_minutes": step.estimated_time_minutes,
+            "confidence": step.confidence,
             "media": [{"type": m.media_type, "url": m.media_url} for m in step.media]
         }
         for step in sorted(recipe.steps, key=lambda s: s.step_number)
@@ -98,7 +103,10 @@ def get_recipe_by_id(db: Session, recipe_id: str, current_user_id: Optional[str]
         "prep_time_minutes": recipe.prep_time_minutes,
         "cook_time_minutes": recipe.cook_time_minutes,
         "source_type": recipe.source_type,
-        "confidence_score": recipe.confidence_score,
+        "confidence_score": float(recipe.confidence_score) if recipe.confidence_score else None,
+        "youtube_url": recipe.youtube_url,
+        "external_source_url": recipe.external_source_url,
+        "field_confidence": recipe.field_confidence,
         "creator": {
             "id": recipe.creator.id,
             "name": recipe.creator.name

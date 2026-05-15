@@ -17,6 +17,7 @@ from database.models.recipe import Recipe, SourceType, RecipeStatus, VisibilityT
 from database.models.ingredient import Ingredient
 from database.models.recipe_ingredient import RecipeIngredient
 from database.models.recipe_step import RecipeStep
+from database.models.tag import Tag
 from schemas.ai_schema import GenerateRequest, AIJobResponse
 from services.youtube_service import validate_youtube_url, collect_video_data
 from services.ai_service import extract_recipe
@@ -50,7 +51,7 @@ def process_ai_job(job_id: str, youtube_url: str, user_id: str):
             return
         
         # ── Step 1: Collect data from YouTube ──
-        video_data = collect_video_data(youtube_url)
+        video_data = collect_video_data(youtube_url, job_id=job_id)
         
         # Save the collected data to the job (for debugging & display)
         job.video_title = video_data["title"]
@@ -76,6 +77,7 @@ def process_ai_job(job_id: str, youtube_url: str, user_id: str):
             id=str(uuid.uuid4()),
             creator_id=user_id,
             title=extracted.title,
+            description=extracted.description,
             source_type=SourceType.youtube_ai,
             status=RecipeStatus.draft,
             visibility=VisibilityType.private,
@@ -84,6 +86,7 @@ def process_ai_job(job_id: str, youtube_url: str, user_id: str):
             cook_time_minutes=extracted.cook_time_minutes,
             confidence_score=extracted.title_confidence,
             youtube_url=youtube_url,
+            external_source_url=extracted.source_url,
             field_confidence={
                 "title": extracted.title_confidence,
                 "servings": extracted.servings_confidence,
@@ -147,7 +150,38 @@ def process_ai_job(job_id: str, youtube_url: str, user_id: str):
         
         db.commit()
         
-        # ── Step 6: Mark job as completed ──
+        # ── Step 6: Create Tags (cuisine + diet) ──
+        all_tags = []
+        if extracted.cuisine:
+            all_tags.append((extracted.cuisine.lower(), "cuisine"))
+        for dt in extracted.diet_tags:
+            all_tags.append((dt.lower(), "diet"))
+        
+        for tag_name, tag_type in all_tags:
+            tag = db.query(Tag).filter(Tag.name == tag_name).first()
+            if not tag:
+                from database.models.tag import TagType
+                tag = Tag(
+                    id=str(uuid.uuid4()),
+                    name=tag_name,
+                    tag_type=TagType(tag_type),
+                )
+                db.add(tag)
+                db.commit()
+                db.refresh(tag)
+            
+            # Link tag to recipe
+            from database.models.recipe_tag import RecipeTag
+            existing_link = db.query(RecipeTag).filter(
+                RecipeTag.recipe_id == new_recipe.id,
+                RecipeTag.tag_id == tag.id
+            ).first()
+            if not existing_link:
+                db.add(RecipeTag(recipe_id=new_recipe.id, tag_id=tag.id))
+        
+        db.commit()
+        
+        # ── Step 7: Mark job as completed ──
         job.recipe_id = new_recipe.id
         job.confidence_score = extracted.title_confidence
         job.status = AIJobStatus.completed
