@@ -78,7 +78,6 @@ def get_recipe_by_id(db: Session, recipe_id: str, current_user_id: Optional[str]
             "unit": r_ing.unit or r_ing.ingredient.default_unit,
             "preparation_note": r_ing.preparation_note,
             "confidence": r_ing.confidence,
-            "ai_note": r_ing.ai_note,
         }
         for r_ing in recipe.ingredients
     ]

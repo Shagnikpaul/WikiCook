@@ -127,7 +127,6 @@ def process_ai_job(job_id: str, youtube_url: str, user_id: str):
                     "quantity": ing.quantity_confidence,
                     "unit": ing.unit_confidence,
                 },
-                ai_note="to taste" if ing.quantity is None else None,
             )
             db.add(recipe_ing)
         

@@ -20,7 +20,6 @@ class RecipeIngredient(Base):
 
     # AI confidence tracking
     confidence = Column(JSONB, nullable=True)             # {"name": 0.98, "quantity": 0.61, "unit": 0.85}
-    ai_note = Column(Text, nullable=True)                 # "Quantity unclear in source video" or "to taste"
 
     # Relationships
     recipe = relationship("Recipe", back_populates="ingredients")
