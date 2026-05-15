@@ -16,8 +16,10 @@ from database.models.user import User
 
 SECRET = os.getenv("JWT_SECRET", "super-secret-key-for-development-only")
 
+
 async def get_user_db(session: AsyncSession = Depends(get_async_session)):
     yield SQLAlchemyUserDatabase(session, User)
+
 
 class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
     reset_password_token_secret = SECRET
@@ -34,15 +36,23 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
     async def on_after_request_verify(
         self, user: User, token: str, request: Optional[Request] = None
     ):
-        print(f"Verification requested for user {user.id}. Verification token: {token}")
+        print(
+            f"Verification requested for user {user.id}. Verification token: {token}")
+
 
 async def get_user_manager(user_db: SQLAlchemyUserDatabase = Depends(get_user_db)):
     yield UserManager(user_db)
 
-cookie_transport = CookieTransport(cookie_name="wikicook-auth", cookie_max_age=3600)
+cookie_transport = CookieTransport(
+    cookie_name="wikicook-auth",
+    cookie_max_age=3600,
+    cookie_samesite="none",
+    cookie_secure=True)
+
 
 def get_jwt_strategy() -> JWTStrategy:
     return JWTStrategy(secret=SECRET, lifetime_seconds=3600)
+
 
 auth_backend = AuthenticationBackend(
     name="jwt",

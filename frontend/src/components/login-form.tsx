@@ -62,17 +62,17 @@ export function LoginForm({
             </FieldDescription>
           </div>
           <Field>
-            <FieldLabel htmlFor="username">User Name</FieldLabel>
+            <FieldLabel htmlFor="email">Email</FieldLabel>
             <Input
               id="username"
-              type="text"
+              type="email"
               onChange={(e) => setUserName(e.target.value)}
-              placeholder="Joe"
+              placeholder="Joe@yahoo.com"
               required
             />
           </Field>
           <Field>
-            <FieldLabel htmlFor="email">Password</FieldLabel>
+            <FieldLabel htmlFor="password">Password</FieldLabel>
             <Input
               id="password"
               type="password"
