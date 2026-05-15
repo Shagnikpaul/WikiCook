@@ -11,7 +11,7 @@ def get_recipes(db: Session, diet: Optional[str] = None, cuisine: Optional[str] 
     """
     Fetch a list of recipes with optional filtering.
     """
-    query = db.query(Recipe).options(joinedload(Recipe.tags), joinedload(Recipe.steps).joinedload("media"))
+    query = db.query(Recipe).options(joinedload(Recipe.tags), joinedload(Recipe.steps).joinedload(RecipeStep.media))
     
     # We apply eager loading for tags and media to get the thumbnail and tags efficiently.
     
@@ -62,8 +62,8 @@ def get_recipe_by_id(db: Session, recipe_id: str, current_user_id: Optional[str]
     """
     recipe = db.query(Recipe).options(
         joinedload(Recipe.creator),
-        joinedload(Recipe.ingredients).joinedload("ingredient"),
-        joinedload(Recipe.steps).joinedload("media"),
+        joinedload(Recipe.ingredients).joinedload(RecipeIngredient.ingredient),
+        joinedload(Recipe.steps).joinedload(RecipeStep.media),
         joinedload(Recipe.tags)
     ).filter(Recipe.id == recipe_id).first()
     

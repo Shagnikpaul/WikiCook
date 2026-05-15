@@ -4,6 +4,7 @@ from database.connection import engine, Base
 from routes.user_routes import router as user_router
 from routes.recipe_routes import router as recipe_router
 from routes.step_routes import router as step_router
+from routes.ai_routes import router as ai_router
 from auth import fastapi_users, auth_backend
 from schemas.user_schema import UserRead, UserCreate, UserUpdate
 
@@ -59,3 +60,4 @@ app.include_router(
 app.include_router(user_router)
 app.include_router(recipe_router)
 app.include_router(step_router)
+app.include_router(ai_router)

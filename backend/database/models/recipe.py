@@ -2,6 +2,7 @@ from sqlalchemy import Column, String, Integer, Text, DateTime, ForeignKey, Enum
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
+from fastapi_users_db_sqlalchemy.generics import GUID
 from database.connection import Base
 import uuid
 import enum
@@ -29,7 +30,6 @@ class Recipe(Base):
     __tablename__ = "recipes"
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    from fastapi_users_db_sqlalchemy.generics import GUID
     creator_id = Column(GUID(), ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
     title = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
@@ -45,7 +45,7 @@ class Recipe(Base):
 
     # AI-generation tracking
     youtube_url = Column(Text, nullable=True)             # Original video link
-    ai_job_id = Column(String, ForeignKey("ai_jobs.id"), nullable=True)  # Link to generation job
+    # Note: ai_job_id link is on AIJob.recipe_id (one-direction FK, avoids ambiguity)
     field_confidence = Column(JSONB, nullable=True)       # {"title": 0.95, "servings": 0.60}
     
     created_at = Column(DateTime(timezone=True), server_default=func.now())

@@ -9,4 +9,6 @@ python-multipart
 pydantic[email]
 bcrypt
 cryptography
-axios
+youtube-transcript-api
+yt-dlp
+groq

@@ -1,5 +1,4 @@
 from sqlalchemy import Column, String, Integer, Text, Numeric, DateTime, ForeignKey, Enum as SQLEnum
-from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from fastapi_users_db_sqlalchemy.generics import GUID
@@ -44,6 +43,6 @@ class AIJob(Base):
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-    # Relationships
+    # Relationships — foreign_keys specified because Recipe has no FK back to AIJob
     user = relationship("User", backref="ai_jobs")
-    recipe = relationship("Recipe", backref="ai_job")
+    recipe = relationship("Recipe", foreign_keys=[recipe_id], backref="ai_job")
