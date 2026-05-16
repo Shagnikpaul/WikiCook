@@ -23,24 +23,21 @@ export function LoginForm({
   const navigate = useNavigate();
 
 
-  const handleSubmit = async (e: React.SubmitEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
     try {
-      login(
-        {
-          username,
-          password
-        }
-      )
+      await login({
+        username,
+        password,
+      })
+
       navigate({
-        to: '/add-recipe'
+        to: "/add-recipe",
       })
     } catch (e) {
-      console.log('Error in login....');
-
+      console.log("Error in login....")
     }
-
-
   }
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>

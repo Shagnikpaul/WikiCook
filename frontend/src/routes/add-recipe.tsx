@@ -1,19 +1,15 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useEffect } from 'react';
-import { getMe } from '@/lib/auth';
+import { useAuth } from '@/hooks/use-auth';
 
 export const Route = createFileRoute('/add-recipe')({
   component: RouteComponent,
 })
 
 function RouteComponent() {
+  const { data: user, isLoading } = useAuth()
 
-  const load = useEffect(() => {
-    getMe().then((r) => {
-      console.log('user ', r);
-
-    })
-
-  }, [])
-  return <div>Hello "/add-recipe"!</div>
+  if (!isLoading)
+    return <div>Hello "/add-recipe"! for user : {user?.id}</div>
+  else
+    return <div>Wait Loading...</div>
 }

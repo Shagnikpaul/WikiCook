@@ -47,7 +47,8 @@ cookie_transport = CookieTransport(
     cookie_name="wikicook-auth",
     cookie_max_age=3600,
     cookie_samesite="none",
-    cookie_secure=True)
+    cookie_secure=True,
+    cookie_domain="wikicook-backend.onrender.com")
 
 
 def get_jwt_strategy() -> JWTStrategy:

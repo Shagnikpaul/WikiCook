@@ -11,6 +11,16 @@ type RegisterInput = {
     password: string
 }
 
+type User = {
+    id: string
+    email: string
+    is_active: boolean
+    is_superuser: boolean
+    is_verified: boolean
+    name: string
+    image: string
+}
+
 export async function login(data: LoginInput) {
     const body = new URLSearchParams()
 
@@ -54,7 +64,7 @@ export async function register(data: RegisterInput) {
     return res.json()
 }
 
-export async function getMe() {
+export async function getMe(): Promise<User | null> {
     const res = await fetch(`${API}/users/me`, {
         credentials: "include",
     })
