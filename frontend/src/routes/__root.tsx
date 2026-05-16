@@ -5,6 +5,7 @@ import { TanStackDevtools } from "@tanstack/react-devtools"
 import { QueryClientProvider } from "@tanstack/react-query"
 import appCss from "../styles.css?url"
 import { queryClient } from "@/lib/query-client"
+import { Navbar1 } from "@/components/navbar1";
 
 
 export const Route = createRootRoute({
@@ -44,7 +45,12 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
+
+
         <QueryClientProvider client={queryClient}>
+          <div className="flex justify-center">
+            <Navbar1 />
+          </div>
           {children}
         </QueryClientProvider>
         <Scripts />

@@ -33,7 +33,7 @@ export function LoginForm({
       })
 
       navigate({
-        to: "/add-recipe",
+        to: "/",
       })
     } catch (e) {
       console.log("Error in login....")

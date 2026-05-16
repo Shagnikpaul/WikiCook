@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useAuth } from '@/hooks/use-auth';
 
-export const Route = createFileRoute('/add-recipe')({
+export const Route = createFileRoute('/recipe/_protected/add-recipe')({
   component: RouteComponent,
 })
 

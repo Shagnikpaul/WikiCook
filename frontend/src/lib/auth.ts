@@ -1,4 +1,7 @@
+
+
 const API = import.meta.env.VITE_API_URL
+
 
 type LoginInput = {
     username: string
@@ -75,6 +78,10 @@ export async function getMe(): Promise<User | null> {
 
     return res.json()
 }
+
+
+
+
 
 export async function logout() {
     await fetch(`${API}/auth/jwt/logout`, {

@@ -11,8 +11,9 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as AddRecipeRouteImport } from './routes/add-recipe'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as RecipeProtectedAddRecipeRouteImport } from './routes/recipe/_protected/add-recipe'
+import { Route as RecipeProtectedProtectedRouteImport } from './routes/recipe/_protected/_protected'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -24,49 +25,66 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AddRecipeRoute = AddRecipeRouteImport.update({
-  id: '/add-recipe',
-  path: '/add-recipe',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RecipeProtectedAddRecipeRoute =
+  RecipeProtectedAddRecipeRouteImport.update({
+    id: '/recipe/_protected/add-recipe',
+    path: '/recipe/add-recipe',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const RecipeProtectedProtectedRoute =
+  RecipeProtectedProtectedRouteImport.update({
+    id: '/recipe/_protected/_protected',
+    path: '/recipe',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/add-recipe': typeof AddRecipeRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/recipe': typeof RecipeProtectedProtectedRoute
+  '/recipe/add-recipe': typeof RecipeProtectedAddRecipeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/add-recipe': typeof AddRecipeRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/recipe': typeof RecipeProtectedProtectedRoute
+  '/recipe/add-recipe': typeof RecipeProtectedAddRecipeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/add-recipe': typeof AddRecipeRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/recipe/_protected/_protected': typeof RecipeProtectedProtectedRoute
+  '/recipe/_protected/add-recipe': typeof RecipeProtectedAddRecipeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/add-recipe' | '/login' | '/signup'
+  fullPaths: '/' | '/login' | '/signup' | '/recipe' | '/recipe/add-recipe'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/add-recipe' | '/login' | '/signup'
-  id: '__root__' | '/' | '/add-recipe' | '/login' | '/signup'
+  to: '/' | '/login' | '/signup' | '/recipe' | '/recipe/add-recipe'
+  id:
+    | '__root__'
+    | '/'
+    | '/login'
+    | '/signup'
+    | '/recipe/_protected/_protected'
+    | '/recipe/_protected/add-recipe'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AddRecipeRoute: typeof AddRecipeRoute
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
+  RecipeProtectedProtectedRoute: typeof RecipeProtectedProtectedRoute
+  RecipeProtectedAddRecipeRoute: typeof RecipeProtectedAddRecipeRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -85,13 +103,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/add-recipe': {
-      id: '/add-recipe'
-      path: '/add-recipe'
-      fullPath: '/add-recipe'
-      preLoaderRoute: typeof AddRecipeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -99,14 +110,29 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/recipe/_protected/add-recipe': {
+      id: '/recipe/_protected/add-recipe'
+      path: '/recipe/add-recipe'
+      fullPath: '/recipe/add-recipe'
+      preLoaderRoute: typeof RecipeProtectedAddRecipeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/recipe/_protected/_protected': {
+      id: '/recipe/_protected/_protected'
+      path: '/recipe'
+      fullPath: '/recipe'
+      preLoaderRoute: typeof RecipeProtectedProtectedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AddRecipeRoute: AddRecipeRoute,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
+  RecipeProtectedProtectedRoute: RecipeProtectedProtectedRoute,
+  RecipeProtectedAddRecipeRoute: RecipeProtectedAddRecipeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

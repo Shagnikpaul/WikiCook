@@ -2,7 +2,7 @@
 
 import { GalleryVerticalEndIcon } from "lucide-react"
 import { Link, useNavigate } from "@tanstack/react-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { login, register } from "@/lib/auth";
+import { useAuth } from "@/hooks/use-auth";
 
 export function SignupForm({
   className,
@@ -22,6 +23,18 @@ export function SignupForm({
   const [password, setPassword] = useState("")
   const [name, setName] = useState("")
   const navigate = useNavigate();
+
+
+  const { data: user, isLoading } = useAuth()
+
+
+  useEffect(() => {
+    if (!isLoading && user) {
+      navigate({ to: "/" })
+    }
+  }, [user, isLoading])
+
+
   const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
     const res = await register({ name, email, password });
