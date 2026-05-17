@@ -10,7 +10,52 @@ from crud.recipe_crud import (
 )
 from auth import get_current_user, get_optional_user
 from database.models.user import User
-from typing import Optional
+from typing import Optional, List, Dict, Any
+
+class MediaOut(BaseModel):
+    type: str
+    url: str
+
+class StepOut(BaseModel):
+    id: str
+    step_number: int
+    instruction: str
+    estimated_time_minutes: Optional[int] = None
+    confidence: Optional[Dict[str, Any]] = None
+    media: List[MediaOut]
+
+class IngredientOut(BaseModel):
+    id: str
+    ingredient_id: str
+    name: str
+    quantity: Optional[float] = None
+    unit: Optional[str] = None
+    preparation_note: Optional[str] = None
+    confidence: Optional[Dict[str, Any]] = None
+
+class CreatorOut(BaseModel):
+    id: str
+    name: str
+
+class RecipeDetailResponse(BaseModel):
+    id: str
+    title: str
+    description: Optional[str] = None
+    servings: Optional[int] = None
+    prep_time_minutes: Optional[int] = None
+    cook_time_minutes: Optional[int] = None
+    source_type: str
+    confidence_score: Optional[float] = None
+    youtube_url: Optional[str] = None
+    external_source_url: Optional[str] = None
+    field_confidence: Optional[Dict[str, Any]] = None
+    creator: CreatorOut
+    ingredients: List[IngredientOut]
+    steps: List[StepOut]
+    tags: List[str]
+    status: str
+    can_edit: bool
+    can_comment: bool
 
 class RecipeCreate(BaseModel):
     title: str
@@ -21,9 +66,10 @@ class RecipeCreate(BaseModel):
     visibility: Optional[str] = "public"
 
 class RecipeIngredientAdd(BaseModel):
-    ingredient_id: str
-    quantity: float
+    ingredient_name: str
+    quantity: Optional[float] = None
     unit: Optional[str] = None
+    preparation_note: Optional[str] = None
 
 class RecipeStepAdd(BaseModel):
     step_number: int
@@ -61,7 +107,7 @@ def read_recipes(
     return {"recipes": get_recipes(db, diet=diet, cuisine=cuisine, max_time=max_time, sort=sort)}
 
 
-@router.get("/{recipe_id}")
+@router.get("/{recipe_id}", response_model=RecipeDetailResponse)
 def read_recipe_detail(
     recipe_id: str,
     user: Optional[User] = Depends(get_optional_user),

@@ -3,7 +3,9 @@ from database.models.recipe import Recipe, RecipeStatus, VisibilityType
 from database.models.recipe_ingredient import RecipeIngredient
 from database.models.recipe_step import RecipeStep
 from database.models.recipe_step_media import RecipeStepMedia, MediaType
+from database.models.ingredient import Ingredient
 from database.models.tag import Tag, TagType
+import uuid
 from fastapi import HTTPException
 from typing import Optional
 
@@ -73,6 +75,8 @@ def get_recipe_by_id(db: Session, recipe_id: str, current_user_id: Optional[str]
     # Format the ingredients using List Comprehension
     ingredients_out = [
         {
+            "id": r_ing.id,
+            "ingredient_id": r_ing.ingredient_id,
             "name": r_ing.ingredient.name,
             "quantity": float(r_ing.quantity) if r_ing.quantity is not None else None,
             "unit": r_ing.unit or r_ing.ingredient.default_unit,
@@ -85,11 +89,12 @@ def get_recipe_by_id(db: Session, recipe_id: str, current_user_id: Optional[str]
     # Format the steps using List Comprehension
     steps_out = [
         {
+            "id": step.id,
             "step_number": step.step_number,
             "instruction": step.instruction,
             "estimated_time_minutes": step.estimated_time_minutes,
             "confidence": step.confidence,
-            "media": [{"type": m.media_type, "url": m.media_url} for m in step.media]
+            "media": [{"id": m.id, "type": m.media_type, "url": m.media_url} for m in step.media]
         }
         for step in sorted(recipe.steps, key=lambda s: s.step_number)
     ]
@@ -145,11 +150,20 @@ def add_ingredient_to_recipe(db: Session, recipe_id: str, current_user_id: str, 
     if recipe.creator_id != current_user_id:
         raise HTTPException(status_code=403, detail="Not authorized to edit this recipe")
 
+    # Find or create canonical ingredient
+    canonical = db.query(Ingredient).filter(Ingredient.name == ingredient_data["ingredient_name"]).first()
+    if not canonical:
+        canonical = Ingredient(id=str(uuid.uuid4()), name=ingredient_data["ingredient_name"])
+        db.add(canonical)
+        db.commit()
+        db.refresh(canonical)
+
     new_ingredient = RecipeIngredient(
         recipe_id=recipe_id,
-        ingredient_id=ingredient_data["ingredient_id"],
-        quantity=ingredient_data["quantity"],
-        unit=ingredient_data.get("unit")
+        ingredient_id=canonical.id,
+        quantity=ingredient_data.get("quantity"),
+        unit=ingredient_data.get("unit"),
+        preparation_note=ingredient_data.get("preparation_note")
     )
     db.add(new_ingredient)
     db.commit()
