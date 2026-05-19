@@ -70,15 +70,20 @@ export async function register(data: RegisterInput) {
 export async function getMe(): Promise<User | null> {
     const res = await fetch(`${API}/users/me`, {
         credentials: "include",
-    })
+    });
 
-    if (!res.ok) {
-        return null
+    console.log("GET ME STATUS:", res.status);
+
+    if (res.status === 401 || res.status === 403) {
+        return null;
     }
 
-    return res.json()
-}
+    if (!res.ok) {
+        throw new Error("Failed to fetch user");
+    }
 
+    return res.json();
+}
 
 
 

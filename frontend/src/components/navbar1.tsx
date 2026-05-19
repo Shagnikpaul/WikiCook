@@ -2,6 +2,7 @@
 
 import { Book, Menu, Sunset, Trees, Zap } from "lucide-react";
 
+import { useNavigate } from "@tanstack/react-router";
 import {
   Accordion,
   AccordionContent,
@@ -26,9 +27,8 @@ import {
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
-import { logout } from "@/lib/auth";
+import { logout } from "@/lib/auth/auth";
 import { queryClient } from "@/lib/query-client";
-import { useNavigate } from "@tanstack/react-router";
 
 interface MenuItem {
   title: string;
@@ -166,16 +166,7 @@ const Navbar1 = ({
         <nav className="hidden items-center justify-between lg:flex">
           <div className="flex items-center gap-6">
             {/* Logo */}
-            <a href={logo.url} className="flex items-center gap-2">
-              <img
-                src={logo.src}
-                className="max-h-8 dark:invert"
-                alt={logo.alt}
-              />
-              <span className="text-lg font-semibold tracking-tighter">
-                {logo.title}
-              </span>
-            </a>
+            
             <div className="flex items-center">
               <NavigationMenu>
                 <NavigationMenuList>

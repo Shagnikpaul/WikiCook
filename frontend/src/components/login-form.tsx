@@ -12,7 +12,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { login } from "@/lib/auth";
+import { getMe, login } from "@/lib/auth/auth";
 
 export function LoginForm({
   className,
@@ -31,7 +31,8 @@ export function LoginForm({
         username,
         password,
       })
-
+      // wait until cookie/session is actually usable
+      await getMe()
       navigate({
         to: "/",
       })
