@@ -1,48 +1,131 @@
 import { useState } from "react";
-import type { RecipeFormData } from "@/services/recipes/types";
-import {
-    addIngredient,
-    addStep,
-    createRecipe,
-    uploadStepMedia,
-} from "@/services/recipes/mutations";
 
+import {
+    useAddIngredient,
+    useAddStep,
+    useCreateRecipe as useCreateRecipeMutation,
+    useUploadStepMedia,
+} from "./useRecipeMutations";
+
+import type {
+    RecipeFormData,
+} from "@/services/recipes/types";
 
 export function useCreateRecipe() {
-    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const publishRecipe = async (form: RecipeFormData) => {
-        setIsSubmitting(true);
+    const [uploadProgress, setUploadProgress] =
+        useState(0);
 
-        try {
-            const created = await createRecipe(form);
-            const recipeId = created.id;
+    // ---------- mutations ----------
 
-            for (const ingredient of form.ingredients) {
-                if (!ingredient.ingredient_name.trim()) continue;
-                await addIngredient(recipeId, ingredient);
+    const createRecipeMutation =
+        useCreateRecipeMutation();
+
+    const addIngredientMutation =
+        useAddIngredient();
+
+    const addStepMutation =
+        useAddStep();
+
+    const uploadMediaMutation =
+        useUploadStepMedia();
+
+    // ---------- publish workflow ----------
+
+    const publishRecipe = async (
+        form: RecipeFormData
+    ) => {
+
+        setUploadProgress(0);
+
+        // ---------- create recipe ----------
+
+        const createdRecipe =
+            await createRecipeMutation.mutateAsync(
+                form
+            );
+
+        const recipeId =
+            createdRecipe.id;
+
+        setUploadProgress(20);
+
+        // ---------- ingredients ----------
+
+        const validIngredients =
+            form.ingredients.filter(
+                (ingredient) =>
+                    ingredient.ingredient_name.trim()
+            );
+
+        await Promise.all(
+
+            validIngredients.map(
+                (ingredient) =>
+
+                    addIngredientMutation.mutateAsync({
+                        recipeId,
+                        data: ingredient,
+                    })
+            )
+        );
+
+        setUploadProgress(50);
+
+        // ---------- steps ----------
+
+        const validSteps =
+            form.steps.filter(
+                (step) =>
+                    step.instruction.trim()
+            );
+
+        for (const step of validSteps) {
+
+            const createdStep =
+                await addStepMutation.mutateAsync({
+                    recipeId,
+                    data: step,
+                });
+
+            // ---------- media upload ----------
+
+            if (
+                step.mediaFiles &&
+                step.mediaFiles.length > 0
+            ) {
+
+                await Promise.all(
+
+                    step.mediaFiles.map(
+                        (file) =>
+                            uploadMediaMutation.mutateAsync({
+                                stepId:
+                                    createdStep.id,
+
+                                file,
+                            })
+                    )
+                );
             }
-
-            for (const step of form.steps) {
-                if (!step.instruction.trim()) continue;
-
-                const createdStep = await addStep(recipeId, step);
-
-                if (step.mediaFiles?.length) {
-                    for (const file of step.mediaFiles) {
-                        await uploadStepMedia(createdStep.id, file);
-                    }
-                }
-            }
-
-            return recipeId;
-        } finally {
-            setIsSubmitting(false);
         }
+
+        setUploadProgress(100);
+
+        return recipeId;
     };
+
+    // ---------- combined loading ----------
+
+    const isSubmitting =
+        createRecipeMutation.isPending ||
+        addIngredientMutation.isPending ||
+        addStepMutation.isPending ||
+        uploadMediaMutation.isPending;
 
     return {
         publishRecipe,
+        uploadProgress,
         isSubmitting,
     };
 }
