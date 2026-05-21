@@ -32,3 +32,91 @@ export interface RecipeFormData {
     ingredients: Array<IngredientInput>;
     steps: Array<StepInput>;
 }
+
+// ---------- creator ----------
+
+export type Creator = {
+    id: string;
+    name: string;
+};
+
+// ---------- media ----------
+
+export type StepMedia = {
+    type: string;
+    url: string;
+};
+
+// ---------- ingredient detail ----------
+
+export type RecipeIngredient = {
+    id: string;
+
+    ingredient_id: string;
+
+    name: string;
+
+    quantity: number | null;
+
+    unit: string | null;
+
+    preparation_note: string | null;
+
+    confidence?: Record<string, unknown> | null;
+};
+
+// ---------- step detail ----------
+
+export type RecipeStep = {
+    id: string;
+
+    step_number: number;
+
+    instruction: string;
+
+    estimated_time_minutes: number | null;
+
+    confidence?: Record<string, unknown> | null;
+
+    media: Array<StepMedia>;
+};
+
+// ---------- full recipe detail ----------
+
+export type RecipeDetailResponse = {
+    id: string;
+
+    title: string;
+
+    description: string | null;
+
+    servings: number | null;
+
+    prep_time_minutes: number | null;
+
+    cook_time_minutes: number | null;
+
+    source_type: string;
+
+    confidence_score: number | null;
+
+    youtube_url: string | null;
+
+    external_source_url: string | null;
+
+    field_confidence?: Record<string, unknown> | null;
+
+    creator: Creator;
+
+    ingredients: Array<RecipeIngredient>;
+
+    steps: Array<RecipeStep>;
+
+    tags: Array<string>;
+
+    status: string;
+
+    can_edit: boolean;
+
+    can_comment: boolean;
+};
