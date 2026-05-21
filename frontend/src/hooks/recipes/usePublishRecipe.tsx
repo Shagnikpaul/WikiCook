@@ -46,7 +46,8 @@ export function useCreateRecipe() {
             );
 
         const recipeId =
-            createdRecipe.id;
+            createdRecipe.recipe_id;
+        console.log('recipeId obtained : ', createdRecipe);
 
         setUploadProgress(20);
 
