@@ -220,6 +220,31 @@ function RouteComponent() {
                                 </Button>
                             </div>
 
+                            {/* RECIPE METADATA */}
+                            <div className="grid grid-cols-3 gap-3">
+                                <div className="text-center p-3 rounded-xl bg-[#FCFAF6] dark:bg-zinc-950/40 border border-zinc-200/40 dark:border-zinc-800/40">
+                                    <ChefHat className="w-5 h-5 mx-auto mb-1 text-orange-500" />
+                                    <p className="text-[10px] text-zinc-400 font-bold uppercase">Servings</p>
+                                    <p className="text-xs font-bold text-zinc-800 dark:text-zinc-200 mt-0.5">
+                                        {recipe.servings ? `${recipe.servings}` : "N/A"}
+                                    </p>
+                                </div>
+                                <div className="text-center p-3 rounded-xl bg-[#FCFAF6] dark:bg-zinc-950/40 border border-zinc-200/40 dark:border-zinc-800/40">
+                                    <Clock className="w-5 h-5 mx-auto mb-1 text-orange-500" />
+                                    <p className="text-[10px] text-zinc-400 font-bold uppercase">Cook Time</p>
+                                    <p className="text-xs font-bold text-zinc-800 dark:text-zinc-200 mt-0.5 font-heading">
+                                        {recipe.cook_time_minutes ? `${recipe.cook_time_minutes}m` : "N/A"}
+                                    </p>
+                                </div>
+                                <div className="text-center p-3 rounded-xl bg-[#FCFAF6] dark:bg-zinc-950/40 border border-zinc-200/40 dark:border-zinc-800/40">
+                                    <Globe className="w-5 h-5 mx-auto mb-1 text-orange-500" />
+                                    <p className="text-[10px] text-zinc-400 font-bold uppercase">Source</p>
+                                    <p className="text-xs font-bold text-zinc-800 dark:text-zinc-200 mt-0.5 truncate max-w-full px-1">
+                                        {recipe.source_type || "WikiCook"}
+                                    </p>
+                                </div>
+                            </div>
+
                             {/* DESCRIPTION */}
                             {recipe.description && (
                                 <div className="space-y-2">
@@ -321,25 +346,49 @@ function RouteComponent() {
                                     Ingredients
                                 </h2>
                                 
-                                {/* Bulleted List with click to check/crossout */}
-                                <ul className="space-y-2 text-zinc-700 dark:text-zinc-300 font-medium text-sm md:text-base leading-relaxed pl-1">
-                                    {recipe.ingredients.map((ingredient) => {
+                                <div className="grid gap-3">
+                                    {recipe.ingredients.map((ingredient, index) => {
                                         const isChecked = !!checkedIngredients[ingredient.id];
                                         return (
-                                            <li
+                                            <div
                                                 key={ingredient.id}
                                                 onClick={() => toggleIngredient(ingredient.id)}
-                                                className={`cursor-pointer transition-all duration-150 select-none hover:text-orange-500 dark:hover:text-orange-400 flex items-start gap-1 ${
+                                                className={`flex items-start gap-4 p-4 rounded-2xl border cursor-pointer transition-all duration-200 ${
                                                     isChecked 
-                                                        ? "line-through text-zinc-400/60 dark:text-zinc-600/60" 
-                                                        : ""
+                                                        ? "bg-zinc-50/40 dark:bg-zinc-950/20 border-zinc-100 dark:border-zinc-900 opacity-60" 
+                                                        : "bg-white dark:bg-zinc-900 border-zinc-200/60 dark:border-zinc-800/60 hover:border-orange-200 dark:hover:border-orange-900/60 hover:shadow-xs"
                                                 }`}
                                             >
-                                                <span>{formatIngredientLine(ingredient)}</span>
-                                            </li>
+                                                <div className={`flex shrink-0 h-8 w-8 items-center justify-center rounded-full border-2 font-bold text-xs ${
+                                                    isChecked
+                                                        ? "bg-orange-500 border-orange-500 text-white"
+                                                        : "bg-orange-50 dark:bg-orange-950/20 border-orange-200 dark:border-orange-900 text-orange-600 dark:text-orange-400"
+                                                }`}>
+                                                    {isChecked ? <Check className="w-3.5 h-3.5 stroke-[3]" /> : index + 1}
+                                                </div>
+                                                <div className="flex-1 pt-0.5">
+                                                    <p className={`font-semibold text-base ${isChecked ? "text-zinc-400/80 dark:text-zinc-500/80 line-through" : "text-zinc-800 dark:text-zinc-200"}`}>
+                                                        {ingredient.name}
+                                                    </p>
+                                                    {(ingredient.quantity || ingredient.preparation_note) && (
+                                                        <div className={`text-sm mt-1 flex flex-wrap gap-2 ${isChecked ? "text-zinc-400/60 dark:text-zinc-600/60" : "text-zinc-500 dark:text-zinc-400"}`}>
+                                                            {ingredient.quantity && (
+                                                                <span className="inline-flex items-center gap-1">
+                                                                    <span className="font-medium">{ingredient.quantity} {ingredient.unit}</span>
+                                                                </span>
+                                                            )}
+                                                            {ingredient.preparation_note && (
+                                                                <span className="inline-flex items-center gap-1 before:content-['•'] before:mx-1 before:text-zinc-300">
+                                                                    {ingredient.preparation_note}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
                                         );
                                     })}
-                                </ul>
+                                </div>
                             </div>
 
                             <Separator className="bg-zinc-100 dark:bg-zinc-800" />
@@ -470,31 +519,6 @@ function RouteComponent() {
                                     })}
                                 </div>
 
-                            </div>
-
-                            {/* EXTRA INFORMATION TILES AT THE BOTTOM */}
-                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-4 border-t border-zinc-100 dark:bg-zinc-900 dark:border-zinc-800">
-                                <div className="text-center p-3 rounded-2xl bg-[#FCFAF6] dark:bg-zinc-950/40 border border-zinc-200/40 dark:border-zinc-800/40">
-                                    <ChefHat className="w-5 h-5 mx-auto mb-1 text-orange-500" />
-                                    <p className="text-[10px] text-zinc-400 font-bold uppercase">Servings</p>
-                                    <p className="text-sm font-bold text-zinc-800 dark:text-zinc-200 mt-0.5">
-                                        {recipe.servings ? `${recipe.servings} Servings` : "N/A"}
-                                    </p>
-                                </div>
-                                <div className="text-center p-3 rounded-2xl bg-[#FCFAF6] dark:bg-zinc-950/40 border border-zinc-200/40 dark:border-zinc-800/40">
-                                    <Clock className="w-5 h-5 mx-auto mb-1 text-orange-500" />
-                                    <p className="text-[10px] text-zinc-400 font-bold uppercase">Cook Time</p>
-                                    <p className="text-sm font-bold text-zinc-800 dark:text-zinc-200 mt-0.5 font-heading">
-                                        {recipe.cook_time_minutes ? `${recipe.cook_time_minutes} Mins` : "N/A"}
-                                    </p>
-                                </div>
-                                <div className="text-center p-3 rounded-2xl bg-[#FCFAF6] dark:bg-zinc-950/40 border border-zinc-200/40 dark:border-zinc-800/40 col-span-2 sm:col-span-1">
-                                    <Globe className="w-5 h-5 mx-auto mb-1 text-orange-500" />
-                                    <p className="text-[10px] text-zinc-400 font-bold uppercase">Source</p>
-                                    <p className="text-sm font-bold text-zinc-800 dark:text-zinc-200 mt-0.5 truncate max-w-full px-1">
-                                        {recipe.source_type || "WikiCook"}
-                                    </p>
-                                </div>
                             </div>
 
                         </Card>
