@@ -9,33 +9,37 @@ import uuid
 from fastapi import HTTPException
 from typing import Optional
 
+
 def get_recipes(db: Session, diet: Optional[str] = None, cuisine: Optional[str] = None, max_time: Optional[int] = None, sort: Optional[str] = None):
     """
     Fetch a list of recipes with optional filtering.
     """
-    query = db.query(Recipe).options(joinedload(Recipe.tags), joinedload(Recipe.steps).joinedload(RecipeStep.media))
-    
+    query = db.query(Recipe).options(joinedload(Recipe.tags),
+                                     joinedload(Recipe.steps).joinedload(RecipeStep.media))
+
     # We apply eager loading for tags and media to get the thumbnail and tags efficiently.
-    
+
     if diet or cuisine:
         query = query.join(Recipe.tags)
-        
+
     if diet:
         query = query.filter(Tag.name == diet, Tag.tag_type == TagType.diet)
-        
+
     if cuisine:
-        query = query.filter(Tag.name == cuisine, Tag.tag_type == TagType.cuisine)
-        
+        query = query.filter(Tag.name == cuisine,
+                             Tag.tag_type == TagType.cuisine)
+
     if max_time:
         # sum of prep and cook time
-        query = query.filter((Recipe.prep_time_minutes + Recipe.cook_time_minutes) <= max_time)
-        
+        query = query.filter(
+            (Recipe.prep_time_minutes + Recipe.cook_time_minutes) <= max_time)
+
     if sort == "verified":
         query = query.filter(Recipe.status == "verified")
         # You could add ordering here too
-        
+
     recipes = query.all()
-    
+
     result_list = []
     for r in recipes:
         # Extract thumbnail (first image in the first step if available)
@@ -44,17 +48,17 @@ def get_recipes(db: Session, diet: Optional[str] = None, cuisine: Optional[str] 
             if step.media and len(step.media) > 0:
                 thumbnail = step.media[0].media_url
                 break
-                
+
         result_list.append({
             "id": r.id,
             "title": r.title,
-            "rating": 4.6, # Placeholder for now, could be calculated from reviews
+            "rating": 4.6,  # Placeholder for now, could be calculated from reviews
             "status": r.status,
             "source_type": r.source_type,
             "tags": [tag.name for tag in r.tags],
             "thumbnail": thumbnail
         })
-        
+
     return result_list
 
 
@@ -68,15 +72,15 @@ def get_recipe_by_id(db: Session, recipe_id: str, current_user_id: Optional[str]
         joinedload(Recipe.steps).joinedload(RecipeStep.media),
         joinedload(Recipe.tags)
     ).filter(Recipe.id == recipe_id).first()
-    
+
     if not recipe:
         return None
-        
+
     # Format the ingredients using List Comprehension
     ingredients_out = [
         {
-            "id": r_ing.id,
-            "ingredient_id": r_ing.ingredient_id,
+            "id": str(r_ing.id),
+            "ingredient_id": str(r_ing.ingredient_id),
             "name": r_ing.ingredient.name,
             "quantity": float(r_ing.quantity) if r_ing.quantity is not None else None,
             "unit": r_ing.unit or r_ing.ingredient.default_unit,
@@ -85,22 +89,22 @@ def get_recipe_by_id(db: Session, recipe_id: str, current_user_id: Optional[str]
         }
         for r_ing in recipe.ingredients
     ]
-        
+
     # Format the steps using List Comprehension
     steps_out = [
         {
-            "id": step.id,
+            "id": str(step.id),
             "step_number": step.step_number,
             "instruction": step.instruction,
             "estimated_time_minutes": step.estimated_time_minutes,
             "confidence": step.confidence,
-            "media": [{"id": m.id, "type": m.media_type, "url": m.media_url} for m in step.media]
+            "media": [{"id": str(m.id), "type": m.media_type, "url": m.media_url} for m in step.media]
         }
         for step in sorted(recipe.steps, key=lambda s: s.step_number)
     ]
-        
+
     return {
-        "id": recipe.id,
+        "id": str(recipe.id),
         "title": recipe.title,
         "description": recipe.description,
         "servings": recipe.servings,
@@ -112,7 +116,7 @@ def get_recipe_by_id(db: Session, recipe_id: str, current_user_id: Optional[str]
         "external_source_url": recipe.external_source_url,
         "field_confidence": recipe.field_confidence,
         "creator": {
-            "id": recipe.creator.id,
+            "id": str(recipe.creator.id),
             "name": recipe.creator.name
         },
         "ingredients": ingredients_out,
@@ -120,14 +124,15 @@ def get_recipe_by_id(db: Session, recipe_id: str, current_user_id: Optional[str]
         "tags": [tag.name for tag in recipe.tags],
         "status": recipe.status,
         "can_edit": recipe.creator_id == current_user_id,
-        "can_comment": False # Placeholder
+        "can_comment": False  # Placeholder
     }
 
 
 def create_recipe(db: Session, creator_id: str, recipe_data: dict):
     # Parse visibility default to public if matched
-    viz = VisibilityType.public if recipe_data.get("visibility") == "public" else VisibilityType.private
-    
+    viz = VisibilityType.public if recipe_data.get(
+        "visibility") == "public" else VisibilityType.private
+
     new_recipe = Recipe(
         creator_id=creator_id,
         title=recipe_data["title"],
@@ -143,17 +148,21 @@ def create_recipe(db: Session, creator_id: str, recipe_data: dict):
     db.refresh(new_recipe)
     return new_recipe
 
+
 def add_ingredient_to_recipe(db: Session, recipe_id: str, current_user_id: str, ingredient_data: dict):
     recipe = db.query(Recipe).filter(Recipe.id == recipe_id).first()
     if not recipe:
         raise HTTPException(status_code=404, detail="Recipe not found")
     if recipe.creator_id != current_user_id:
-        raise HTTPException(status_code=403, detail="Not authorized to edit this recipe")
+        raise HTTPException(
+            status_code=403, detail="Not authorized to edit this recipe")
 
     # Find or create canonical ingredient
-    canonical = db.query(Ingredient).filter(Ingredient.name == ingredient_data["ingredient_name"]).first()
+    canonical = db.query(Ingredient).filter(
+        Ingredient.name == ingredient_data["ingredient_name"]).first()
     if not canonical:
-        canonical = Ingredient(id=str(uuid.uuid4()), name=ingredient_data["ingredient_name"])
+        canonical = Ingredient(id=str(uuid.uuid4()),
+                               name=ingredient_data["ingredient_name"])
         db.add(canonical)
         db.commit()
         db.refresh(canonical)
@@ -170,12 +179,14 @@ def add_ingredient_to_recipe(db: Session, recipe_id: str, current_user_id: str, 
     db.refresh(new_ingredient)
     return new_ingredient
 
+
 def add_step_to_recipe(db: Session, recipe_id: str, current_user_id: str, step_data: dict):
     recipe = db.query(Recipe).filter(Recipe.id == recipe_id).first()
     if not recipe:
         raise HTTPException(status_code=404, detail="Recipe not found")
     if recipe.creator_id != current_user_id:
-        raise HTTPException(status_code=403, detail="Not authorized to edit this recipe")
+        raise HTTPException(
+            status_code=403, detail="Not authorized to edit this recipe")
 
     new_step = RecipeStep(
         recipe_id=recipe_id,
@@ -188,13 +199,15 @@ def add_step_to_recipe(db: Session, recipe_id: str, current_user_id: str, step_d
     db.refresh(new_step)
     return new_step
 
+
 def publish_recipe(db: Session, recipe_id: str, current_user_id: str):
     recipe = db.query(Recipe).filter(Recipe.id == recipe_id).first()
     if not recipe:
         raise HTTPException(status_code=404, detail="Recipe not found")
     if recipe.creator_id != current_user_id:
-        raise HTTPException(status_code=403, detail="Not authorized to publish this recipe")
-    
+        raise HTTPException(
+            status_code=403, detail="Not authorized to publish this recipe")
+
     recipe.status = RecipeStatus.community_testing
     db.commit()
     db.refresh(recipe)
@@ -206,7 +219,8 @@ def update_recipe(db: Session, recipe_id: str, current_user_id: str, update_data
     if not recipe:
         raise HTTPException(status_code=404, detail="Recipe not found")
     if recipe.creator_id != current_user_id:
-        raise HTTPException(status_code=403, detail="Not authorized to edit this recipe")
+        raise HTTPException(
+            status_code=403, detail="Not authorized to edit this recipe")
 
     # Only update fields that were actually provided
     for field in ["title", "description", "servings", "prep_time_minutes", "cook_time_minutes", "visibility"]:
@@ -226,7 +240,8 @@ def delete_recipe(db: Session, recipe_id: str, current_user_id: str):
     if not recipe:
         raise HTTPException(status_code=404, detail="Recipe not found")
     if recipe.creator_id != current_user_id:
-        raise HTTPException(status_code=403, detail="Not authorized to delete this recipe")
+        raise HTTPException(
+            status_code=403, detail="Not authorized to delete this recipe")
 
     db.delete(recipe)
     db.commit()
@@ -238,14 +253,16 @@ def update_ingredient_in_recipe(db: Session, recipe_id: str, ingredient_entry_id
     if not recipe:
         raise HTTPException(status_code=404, detail="Recipe not found")
     if recipe.creator_id != current_user_id:
-        raise HTTPException(status_code=403, detail="Not authorized to edit this recipe")
+        raise HTTPException(
+            status_code=403, detail="Not authorized to edit this recipe")
 
     entry = db.query(RecipeIngredient).filter(
         RecipeIngredient.id == ingredient_entry_id,
         RecipeIngredient.recipe_id == recipe_id
     ).first()
     if not entry:
-        raise HTTPException(status_code=404, detail="Ingredient entry not found")
+        raise HTTPException(
+            status_code=404, detail="Ingredient entry not found")
 
     for field in ["quantity", "unit", "preparation_note"]:
         if field in update_data:
@@ -261,14 +278,16 @@ def delete_ingredient_from_recipe(db: Session, recipe_id: str, ingredient_entry_
     if not recipe:
         raise HTTPException(status_code=404, detail="Recipe not found")
     if recipe.creator_id != current_user_id:
-        raise HTTPException(status_code=403, detail="Not authorized to edit this recipe")
+        raise HTTPException(
+            status_code=403, detail="Not authorized to edit this recipe")
 
     entry = db.query(RecipeIngredient).filter(
         RecipeIngredient.id == ingredient_entry_id,
         RecipeIngredient.recipe_id == recipe_id
     ).first()
     if not entry:
-        raise HTTPException(status_code=404, detail="Ingredient entry not found")
+        raise HTTPException(
+            status_code=404, detail="Ingredient entry not found")
 
     db.delete(entry)
     db.commit()
@@ -280,7 +299,8 @@ def update_step_in_recipe(db: Session, recipe_id: str, step_id: str, current_use
     if not recipe:
         raise HTTPException(status_code=404, detail="Recipe not found")
     if recipe.creator_id != current_user_id:
-        raise HTTPException(status_code=403, detail="Not authorized to edit this recipe")
+        raise HTTPException(
+            status_code=403, detail="Not authorized to edit this recipe")
 
     step = db.query(RecipeStep).filter(
         RecipeStep.id == step_id,
@@ -303,7 +323,8 @@ def delete_step_from_recipe(db: Session, recipe_id: str, step_id: str, current_u
     if not recipe:
         raise HTTPException(status_code=404, detail="Recipe not found")
     if recipe.creator_id != current_user_id:
-        raise HTTPException(status_code=403, detail="Not authorized to edit this recipe")
+        raise HTTPException(
+            status_code=403, detail="Not authorized to edit this recipe")
 
     step = db.query(RecipeStep).filter(
         RecipeStep.id == step_id,
@@ -322,19 +343,20 @@ def add_media_to_step(db: Session, step_id: str, uploader_id: str, media_type: s
     step = db.query(RecipeStep).filter(RecipeStep.id == step_id).first()
     if not step:
         raise HTTPException(status_code=404, detail="Step not found")
-    
+
     recipe = db.query(Recipe).filter(Recipe.id == step.recipe_id).first()
     if not recipe:
-         raise HTTPException(status_code=404, detail="Recipe not found")
-         
+        raise HTTPException(status_code=404, detail="Recipe not found")
+
     if recipe.creator_id != uploader_id:
-        raise HTTPException(status_code=403, detail="Not authorized to add media to this step")
+        raise HTTPException(
+            status_code=403, detail="Not authorized to add media to this step")
 
     # Mocking CDN upload and getting URL
     media_url = f"https://cdn.app/{file_name}"
-    
+
     enum_type = MediaType.image if media_type == "image" else MediaType.video
-    
+
     new_media = RecipeStepMedia(
         step_id=step_id,
         media_type=enum_type,
