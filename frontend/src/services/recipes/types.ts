@@ -120,3 +120,17 @@ export type RecipeDetailResponse = {
 
     can_comment: boolean;
 };
+
+// ---------- recipe list response ----------
+
+export type RecipeListResponse = {
+    id: string;
+    title: string;
+    rating: number | null;
+    status: string;
+    source_type: string;
+    tags: Array<string>;
+    thumbnail: string | null;
+    difficulty?: string;
+    time?: string;
+};
