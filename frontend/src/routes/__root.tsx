@@ -47,9 +47,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 
 
         <QueryClientProvider client={queryClient}>
-          <div className="flex justify-center">
-            <Navbar1 />
-          </div>
+          <Navbar1 />
           {children}
           <Toaster richColors />
         </QueryClientProvider>
