@@ -45,7 +45,7 @@ function RouteComponent() {
     // ---------- loading ----------
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-[#FCFAF6] dark:bg-zinc-950 p-8 space-y-8 animate-pulse">
+            <div className="min-h-screen bg-transparent dark:bg-transparent p-8 space-y-8 animate-pulse">
                 <div className="container mx-auto max-w-6xl space-y-8">
                     <div className="h-6 w-24 bg-zinc-200 dark:bg-zinc-800 rounded" />
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -65,7 +65,7 @@ function RouteComponent() {
     // ---------- error ----------
     if (error || !recipe) {
         return (
-            <div className="min-h-screen bg-[#FCFAF6] dark:bg-zinc-950 flex items-center justify-center p-8">
+            <div className="min-h-screen bg-transparent dark:bg-transparent flex items-center justify-center p-8">
                 <div className="max-w-md w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-8 rounded-3xl shadow-sm text-center space-y-4">
                     <div className="inline-flex p-4 rounded-full bg-red-50 text-red-500 mb-2">
                         <Utensils className="w-12 h-12" />
@@ -144,22 +144,8 @@ function RouteComponent() {
         return "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1200&auto=format&fit=crop&q=80";
     };
 
-    // Format bullet ingredients exactly like screenshot
-    const formatIngredientLine = (ing: typeof recipe.ingredients[0]) => {
-        const parts = [];
-        if (ing.quantity !== null && ing.quantity !== undefined) {
-            // format quantity nicely
-            parts.push(ing.quantity);
-        }
-        if (ing.unit) {
-            parts.push(ing.unit);
-        }
-        const qtyString = parts.join(" ");
-        return `${ing.name}${qtyString ? ` – ${qtyString}` : ""}${ing.preparation_note ? ` (${ing.preparation_note})` : ""}`;
-    };
-
     return (
-        <div className="min-h-screen bg-[#FCFAF6] dark:bg-[#1E1C18] text-zinc-800 dark:text-zinc-200">
+        <div className="min-h-screen bg-transparent dark:bg-transparent text-zinc-800 dark:text-zinc-200">
             <div className="container mx-auto max-w-6xl px-4 py-8 space-y-6">
                 
                 {/* TOP BAR / BACK BUTTON */}

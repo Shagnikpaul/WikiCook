@@ -12,7 +12,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { login, register } from "@/lib/auth/auth";
+import { register } from "@/lib/auth/auth";
 import { useAuth } from "@/hooks/use-auth";
 
 export function SignupForm({

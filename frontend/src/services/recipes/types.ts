@@ -26,6 +26,7 @@ export interface RecipeFormData {
     cook_time_minutes: number | null;
 
     visibility: "public" | "private";
+    difficulty: "easy" | "medium" | "hard" | "expert" | "";
 
     tags: Array<string>;
 

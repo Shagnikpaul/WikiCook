@@ -9,6 +9,7 @@ export const defaultRecipeForm: RecipeFormData = {
     cook_time_minutes: null,
 
     visibility: "public",
+    difficulty: "",
 
     tags: [],
 

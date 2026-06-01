@@ -155,9 +155,9 @@ export function Navbar1({ className }: { className?: string }) {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-10 w-10 rounded-full border border-border/50 hover:bg-muted/80 p-0 overflow-hidden focus-visible:ring-2 focus-visible:ring-primary/50 transition-all">
                   <Avatar className="h-full w-full">
-                    <AvatarImage src={(user as any).avatarUrl || ""} alt={user.username || "User"} className="object-cover" />
+                    <AvatarImage src={(user as any).avatarUrl || ""} alt={user.name || "User"} className="object-cover" />
                     <AvatarFallback className="bg-primary/5 text-primary font-medium text-sm">
-                      {user.username ? user.username.charAt(0).toUpperCase() : <UserCircle className="h-5 w-5" />}
+                      {user.name ? user.name.charAt(0).toUpperCase() : <UserCircle className="h-5 w-5" />}
                     </AvatarFallback>
                   </Avatar>
                 </Button>
@@ -165,13 +165,13 @@ export function Navbar1({ className }: { className?: string }) {
               <DropdownMenuContent align="end" className="w-60 rounded-xl p-2 shadow-lg border-border/40">
                 <div className="flex items-center justify-start gap-3 p-2 mb-1">
                   <Avatar className="h-9 w-9 border border-border/50">
-                    <AvatarImage src={(user as any).avatarUrl || ""} alt={user.username || "User"} className="object-cover" />
+                    <AvatarImage src={(user as any).avatarUrl || ""} alt={user.name || "User"} className="object-cover" />
                     <AvatarFallback className="bg-primary/5 text-primary">
-                      {user.username ? user.username.charAt(0).toUpperCase() : <UserCircle className="h-4 w-4" />}
+                      {user.name ? user.name.charAt(0).toUpperCase() : <UserCircle className="h-4 w-4" />}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex flex-col space-y-0.5 leading-none overflow-hidden">
-                    {user.username && <p className="font-medium text-sm truncate">{user.username}</p>}
+                    {user.name && <p className="font-medium text-sm truncate">{user.name}</p>}
                     {user.email && <p className="text-xs text-muted-foreground truncate">{user.email}</p>}
                   </div>
                 </div>

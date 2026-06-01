@@ -36,7 +36,7 @@ function HomePage() {
   })
 
   return (
-    <div className="min-h-screen flex flex-col bg-background font-sans text-foreground">
+    <div className="min-h-screen flex flex-col bg-transparent font-sans text-foreground">
       {/* TWO COLUMN WRAPPER */}
       <div className="flex flex-1 relative w-full max-w-[1600px] mx-auto gap-6 p-6">
         
